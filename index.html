@@ -13,22 +13,48 @@
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        .modal-body::-webkit-scrollbar { width: 8px; }
-        .modal-body::-webkit-scrollbar-track { background: #1f2937; border-radius: 10px; }
-        .modal-body::-webkit-scrollbar-thumb { background: #581c87; border-radius: 10px; }
-        .modal-body::-webkit-scrollbar-thumb:hover { background: #6b21a8; }
-        input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-        input[type=number] { -moz-appearance: textfield; }
-        input[type="checkbox"]:disabled + span { color: #6b7280; cursor: not-allowed; }
-        .alert-modal { transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out; }
-        input[type="radio"]:checked + div > .radio-title { color: #c084fc; }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .modal-body::-webkit-scrollbar {
+            width: 8px;
+        }
+        .modal-body::-webkit-scrollbar-track {
+            background: #1f2937;
+            border-radius: 10px;
+        }
+        .modal-body::-webkit-scrollbar-thumb {
+            background: #581c87;
+            border-radius: 10px;
+        }
+        .modal-body::-webkit-scrollbar-thumb:hover {
+            background: #6b21a8;
+        }
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+        input[type="checkbox"]:disabled + span {
+            color: #6b7280;
+            cursor: not-allowed;
+        }
+        .alert-modal {
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+        }
+        input[type="radio"]:checked + div > .radio-title {
+            color: #c084fc;
+        }
     </style>
 </head>
 <body class="bg-gray-900 text-gray-300">
 
     <div class="container mx-auto p-4 sm:p-8 max-w-4xl">
-        <!-- Header, Main, Footer... (sem alterações) -->
+
+        <!-- Header Section -->
         <header class="text-center mb-8 p-6 rounded-2xl bg-gradient-to-tr from-black to-gray-800 text-white shadow-lg">
             <h1 class="text-5xl md:text-6xl font-black tracking-tight text-amber-400">SABOR AÇAÍTERIA</h1>
             <p class="text-lg md:text-xl mt-2 text-gray-300 opacity-90">Monte seu pedido online de forma fácil e rápida!</p>
@@ -38,6 +64,7 @@
         </header>
 
         <main class="space-y-8">
+            <!-- Products Section -->
             <section id="tamanhos" class="bg-gray-800 p-6 rounded-2xl shadow-md">
                 <h2 class="text-3xl font-bold text-purple-400 mb-4 border-b-2 border-purple-800 pb-2">Escolha o Tamanho</h2>
                 <div id="product-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -46,6 +73,7 @@
             </section>
         </main>
 
+        <!-- Footer -->
         <footer class="text-center mt-10 space-y-4">
             <div class="bg-gray-800 p-4 rounded-2xl shadow-md border-2 border-gray-700">
                  <h3 class="text-lg font-bold text-purple-400 mb-2 flex items-center justify-center gap-2">
@@ -63,295 +91,945 @@
                 <p class="mt-2 text-sm">
                     <a href="#" onclick="openAdminPanel(event)" class="hover:underline">Painel do Administrador</a>
                 </p>
+                 <p id="user-id-display" class="text-xs text-gray-600 mt-4"></p>
             </div>
         </footer>
     </div>
 
-    <!-- Modals (sem alterações na estrutura HTML) -->
-    <!-- Floating Buttons, Item Modal, Cart Modal, Confirmation Modal, Alert Modal, Admin Modal -->
-    <!-- O HTML dos modais permanece o mesmo -->
-    <a href="https://wa.me/5594991623576" target="_blank" class="fixed bottom-5 left-5 z-50"><button class="bg-green-500 text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center hover:bg-green-600 transition-transform transform hover:scale-110"><i class="fab fa-whatsapp text-3xl"></i></button></a>
-    <div id="cart-button" class="fixed bottom-5 right-5 z-50 hidden"><button onclick="toggleCartModal()" class="bg-purple-600 text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center hover:bg-purple-700 transition-transform transform hover:scale-110"><i class="fas fa-shopping-cart text-2xl"></i><span id="cart-count" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center">0</span></button></div>
-    <div id="item-modal" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden items-center justify-center p-4"><div class="bg-gray-800 text-gray-200 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col"><div class="p-4 border-b border-gray-700 flex justify-between items-center"><h3 id="modal-title" class="text-2xl font-bold text-purple-400">Monte seu Açaí</h3><button onclick="closeItemModal()" class="text-gray-400 hover:text-red-500"><i class="fas fa-times text-2xl"></i></button></div><div id="modal-body" class="p-6 space-y-6 overflow-y-auto modal-body"></div><div class="p-4 bg-gray-900 border-t border-gray-700 flex justify-between items-center"><div><span class="text-lg font-medium text-gray-300">Total do Item:</span><span id="modal-item-total" class="text-2xl font-bold text-purple-400 ml-2">R$ 0,00</span></div><button id="add-to-cart-btn" class="bg-green-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-600 transition-all flex items-center gap-2"><i class="fas fa-cart-plus"></i> Adicionar ao Carrinho</button></div></div></div>
-    <div id="cart-modal" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden items-center justify-center p-4"><div class="bg-gray-800 text-gray-200 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col"><div class="p-4 border-b border-gray-700 flex justify-between items-center"><h3 class="text-2xl font-bold text-purple-400">Seu Carrinho e Pedido</h3><button onclick="toggleCartModal()" class="text-gray-400 hover:text-red-500"><i class="fas fa-times text-2xl"></i></button></div><div class="p-6 space-y-6 overflow-y-auto modal-body"><div id="cart-items-container"></div><div id="cart-summary-details" class="pt-4 mt-4 border-t border-gray-700 space-y-2 hidden"><div class="flex justify-between text-gray-400"><span>Subtotal</span><span id="cart-subtotal">R$ 0,00</span></div><div class="flex justify-between text-gray-400"><span>Taxa de Entrega</span><span id="cart-delivery-fee">R$ 0,00</span></div></div><div id="checkout-form" class="space-y-4 pt-6 border-t border-gray-700 hidden"><h4 class="text-xl font-bold text-gray-200">Informações do Pedido</h4><div id="delivery-options"><div class="flex flex-col sm:flex-row gap-4"><label class="flex-1 flex items-center p-3 border-2 border-gray-600 rounded-lg cursor-pointer has-[:checked]:border-purple-500 has-[:checked]:bg-purple-900/50"><input type="radio" name="delivery_option" value="delivery" class="hidden" checked><div class="flex items-center"><span class="mr-3"><i class="fas fa-motorcycle text-xl text-purple-400"></i></span><div><span class="font-semibold text-gray-300 block radio-title">Delivery (Entrega)</span><span class="text-sm text-gray-500">20-60 min</span></div></div></label><label class="flex-1 flex items-center p-3 border-2 border-gray-600 rounded-lg cursor-pointer has-[:checked]:border-purple-500 has-[:checked]:bg-purple-900/50"><input type="radio" name="delivery_option" value="takeout" class="hidden"><div class="flex items-center"><span class="mr-3"><i class="fas fa-store text-xl text-purple-400"></i></span><div><span class="font-semibold text-gray-300 block radio-title">Retirar na Loja</span><span class="text-sm text-gray-500">20-30 min</span></div></div></label></div></div><div><label for="customer-name" class="block text-sm font-medium text-gray-400">Seu Nome</label><input type="text" id="customer-name" class="mt-1 block w-full bg-gray-700 border-2 border-gray-600 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 p-3 text-base" required></div><div id="delivery-fields" class="space-y-4"><div><label for="neighborhood" class="block text-sm font-medium text-gray-400">Selecione o Bairro</label><select id="neighborhood" class="mt-1 block w-full bg-gray-700 border-2 border-gray-600 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 p-3 text-base"><option value="" data-fee="0">-- Escolha uma opção --</option><option value="Jardim Europa" data-fee="7.00">Jardim Europa (R$ 7,00)</option><option value="Amec" data-fee="7.00">Amec (R$ 7,00)</option><option value="Vale dos Sonhos 1 e 2" data-fee="8.00">Vale dos Sonhos 1 e 2 (R$ 8,00)</option><option value="Jardim do Lago" data-fee="8.00">Jardim do Lago (R$ 8,00)</option><option value="Casas Populares" data-fee="9.00">Casas Populares (R$ 9,00)</option><option value="Nova Esperança 2" data-fee="9.00">Nova Esperança 2 (R$ 9,00)</option><option value="Outro Bairro" data-fee="6.00">Outro Bairro (Taxa Padrão R$ 6,00)</option></select></div><div><label for="customer-address" class="block text-sm font-medium text-gray-400">Endereço Completo (Rua, Número, Complemento)</label><input type="text" id="customer-address" class="mt-1 block w-full bg-gray-700 border-2 border-gray-600 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 p-3 text-base" placeholder="Ex: Rua das Flores, 123, apt 4" required></div></div><div><label for="payment-method" class="block text-sm font-medium text-gray-400">Forma de Pagamento</label><select id="payment-method" class="mt-1 block w-full bg-gray-700 border-2 border-gray-600 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 p-3 text-base"><option>Pix</option><option>Cartão de Crédito (na entrega)</option><option>Cartão de Débito (na entrega)</option><option>Dinheiro</option></select><p class="text-xs text-yellow-400 mt-2"><i class="fas fa-info-circle mr-1"></i>Observação: não aceitamos VR e vales refeição no momento.</p></div><div><label for="observations" class="block text-sm font-medium text-gray-400">Observações</label><textarea id="observations" rows="3" class="mt-1 block w-full bg-gray-700 border-2 border-gray-600 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 p-3 text-base" placeholder="Ex: Troco para R$50, sem cebola, etc."></textarea></div></div></div><div class="p-4 bg-gray-900 border-t border-gray-700 flex justify-between items-center"><div><span class="text-lg font-medium text-gray-300">Total do Pedido:</span><span id="cart-total" class="text-2xl font-bold text-purple-400 ml-2">R$ 0,00</span></div><button onclick="finalizeOrder()" class="bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 transition-all flex items-center gap-2"><i class="fab fa-whatsapp"></i> Finalizar Pedido</button></div></div></div>
-    <div id="confirmation-modal" class="fixed inset-0 bg-black bg-opacity-70 z-50 hidden items-center justify-center p-4"><div class="bg-gray-800 text-gray-200 rounded-2xl shadow-2xl w-full max-w-lg text-center p-8"><div id="confirmation-icon"><i class="fas fa-check-circle text-green-500 text-6xl mb-4"></i></div><h3 id="confirmation-title" class="text-2xl font-bold text-gray-100 mb-2">Pedido Recebido!</h3><p id="confirmation-message" class="text-gray-400 mb-6">Seu resumo está pronto. Clique no botão para enviar via WhatsApp e concluir seu pedido!</p><div id="order-summary" class="text-left bg-gray-700 p-4 rounded-lg mb-6 max-h-60 overflow-y-auto modal-body"></div><div id="initial-confirm-buttons" class="flex flex-col sm:flex-row gap-4 justify-center"><button onclick="sendOrderViaWhatsApp()" class="w-full bg-green-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-600 transition-all flex items-center justify-center gap-2"><i class="fab fa-whatsapp"></i> Enviar Pedido</button><button onclick="closeConfirmationModal()" class="w-full bg-gray-600 text-gray-100 font-bold py-3 px-6 rounded-lg hover:bg-gray-500 transition-all">Fechar</button></div><div id="post-send-buttons" class="hidden flex-col gap-4 justify-center"><p class="text-sm text-yellow-400 mb-4">Após enviar a mensagem no WhatsApp, confirme abaixo para limpar seu carrinho.</p><button onclick="confirmOrderSent()" class="w-full bg-teal-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-teal-600 transition-all flex items-center justify-center gap-2"><i class="fas fa-check-square"></i> Pedido Enviado, Limpar Carrinho</button><button onclick="closeConfirmationModal()" class="w-full bg-gray-600 text-gray-100 font-bold py-3 px-6 rounded-lg hover:bg-gray-500 transition-all">Manter Carrinho e Fechar</button></div></div></div>
-    <div id="alert-modal" class="alert-modal fixed inset-0 bg-black bg-opacity-60 z-[60] hidden items-center justify-center p-4 opacity-0"><div class="bg-gray-800 text-gray-200 rounded-2xl shadow-2xl w-full max-w-sm text-center p-6 transform scale-95 transition-transform"><div id="alert-icon" class="mx-auto mb-4"></div><h3 id="alert-title" class="text-xl font-bold text-gray-100 mb-2">Atenção!</h3><p id="alert-message" class="text-gray-400 mb-6">Mensagem de alerta.</p><button onclick="closeAlertModal()" class="w-full bg-purple-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-purple-700 transition-all">OK</button></div></div>
-    <div id="admin-modal" class="fixed inset-0 bg-black bg-opacity-80 z-[70] hidden items-center justify-center p-4"><div class="bg-gray-800 text-gray-200 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col"><div class="p-4 border-b border-gray-700 flex justify-between items-center"><h3 class="text-2xl font-bold text-amber-400"><i class="fas fa-user-shield mr-2"></i>Painel do Administrador</h3><button onclick="closeAdminModal()" class="text-gray-400 hover:text-red-500"><i class="fas fa-times text-2xl"></i></button></div><div id="admin-body" class="p-6 space-y-6 overflow-y-auto modal-body"></div><div class="p-4 bg-gray-900 border-t border-gray-700 flex flex-wrap justify-between items-center gap-4"><button onclick="saveAdminChanges()" class="bg-green-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-700 transition-all flex items-center gap-2"><i class="fas fa-save"></i> Salvar Alterações no Banco de Dados</button><button onclick="resetToDefaults()" class="bg-red-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-700 transition-all flex items-center gap-2 text-sm"><i class="fas fa-undo"></i> Restaurar Cardápio Padrão no Banco de Dados</button></div></div></div>
+    <!-- Floating WhatsApp Button -->
+    <a href="https://wa.me/5594991623576" target="_blank" class="fixed bottom-5 left-5 z-50">
+        <button class="bg-green-500 text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center hover:bg-green-600 transition-transform transform hover:scale-110">
+            <i class="fab fa-whatsapp text-3xl"></i>
+        </button>
+    </a>
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <!-- Floating Cart Button -->
+    <div id="cart-button" class="fixed bottom-5 right-5 z-50 hidden">
+        <button onclick="toggleCartModal()" class="bg-purple-600 text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center hover:bg-purple-700 transition-transform transform hover:scale-110">
+            <i class="fas fa-shopping-cart text-2xl"></i>
+            <span id="cart-count" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center">0</span>
+        </button>
+    </div>
 
-<script>
-    // --- PASSO 2: COLE AQUI AS SUAS CREDENCIAIS DO FIREBASE ---
-    const firebaseConfig = {
-        apiKey: "SUA_API_KEY",
-        authDomain: "SEU_AUTH_DOMAIN",
-        projectId: "SEU_PROJECT_ID",
-        storageBucket: "SEU_STORAGE_BUCKET",
-        messagingSenderId: "SEU_MESSAGING_SENDER_ID",
-        appId: "SEU_APP_ID"
-    };
+    <!-- Item Customization Modal -->
+    <div id="item-modal" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden items-center justify-center p-4">
+        <div class="bg-gray-800 text-gray-200 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+            <div class="p-4 border-b border-gray-700 flex justify-between items-center">
+                <h3 id="modal-title" class="text-2xl font-bold text-purple-400">Monte seu Açaí</h3>
+                <button onclick="closeItemModal()" class="text-gray-400 hover:text-red-500"><i class="fas fa-times text-2xl"></i></button>
+            </div>
+            <div id="modal-body" class="p-6 space-y-6 overflow-y-auto modal-body">
+                <!-- Toppings will be dynamically injected by JavaScript -->
+            </div>
+            <div class="p-4 bg-gray-900 border-t border-gray-700 flex justify-between items-center">
+                <div>
+                    <span class="text-lg font-medium text-gray-300">Total do Item:</span>
+                    <span id="modal-item-total" class="text-2xl font-bold text-purple-400 ml-2">R$ 0,00</span>
+                </div>
+                <button id="add-to-cart-btn" class="bg-green-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-600 transition-all flex items-center gap-2">
+                    <i class="fas fa-cart-plus"></i> Adicionar ao Carrinho
+                </button>
+            </div>
+        </div>
+    </div>
 
-    // --- INICIALIZAÇÃO DO FIREBASE ---
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+    <!-- Cart and Checkout Modal -->
+    <div id="cart-modal" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden items-center justify-center p-4">
+         <div class="bg-gray-800 text-gray-200 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col">
+            <div class="p-4 border-b border-gray-700 flex justify-between items-center">
+                <h3 class="text-2xl font-bold text-purple-400">Seu Carrinho e Pedido</h3>
+                <button onclick="toggleCartModal()" class="text-gray-400 hover:text-red-500"><i class="fas fa-times text-2xl"></i></button>
+            </div>
+            <div class="p-6 space-y-6 overflow-y-auto modal-body">
+                <div id="cart-items-container"></div>
+                <div id="cart-summary-details" class="pt-4 mt-4 border-t border-gray-700 space-y-2 hidden">
+                     <div class="flex justify-between text-gray-400">
+                         <span>Subtotal</span>
+                         <span id="cart-subtotal">R$ 0,00</span>
+                     </div>
+                     <div class="flex justify-between text-gray-400">
+                         <span>Taxa de Entrega</span>
+                         <span id="cart-delivery-fee">R$ 0,00</span>
+                     </div>
+                </div>
+                <div id="checkout-form" class="space-y-4 pt-6 border-t border-gray-700 hidden">
+                    <h4 class="text-xl font-bold text-gray-200">Informações do Pedido</h4>
+                    <div id="delivery-options">
+                        <div class="flex flex-col sm:flex-row gap-4">
+                            <label class="flex-1 flex items-center p-3 border-2 border-gray-600 rounded-lg cursor-pointer has-[:checked]:border-purple-500 has-[:checked]:bg-purple-900/50">
+                                <input type="radio" name="delivery_option" value="delivery" class="hidden" checked>
+                                <div class="flex items-center">
+                                    <span class="mr-3"><i class="fas fa-motorcycle text-xl text-purple-400"></i></span>
+                                    <div><span class="font-semibold text-gray-300 block radio-title">Delivery (Entrega)</span><span class="text-sm text-gray-500">20-60 min</span></div>
+                                </div>
+                            </label>
+                            <label class="flex-1 flex items-center p-3 border-2 border-gray-600 rounded-lg cursor-pointer has-[:checked]:border-purple-500 has-[:checked]:bg-purple-900/50">
+                                <input type="radio" name="delivery_option" value="takeout" class="hidden">
+                                <div class="flex items-center">
+                                    <span class="mr-3"><i class="fas fa-store text-xl text-purple-400"></i></span>
+                                    <div><span class="font-semibold text-gray-300 block radio-title">Retirar na Loja</span><span class="text-sm text-gray-500">20-30 min</span></div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="customer-name" class="block text-sm font-medium text-gray-400">Seu Nome</label>
+                        <input type="text" id="customer-name" class="mt-1 block w-full bg-gray-700 border-2 border-gray-600 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 p-3 text-base" required>
+                    </div>
+                    <div id="delivery-fields" class="space-y-4">
+                         <div>
+                            <label for="neighborhood" class="block text-sm font-medium text-gray-400">Selecione o Bairro</label>
+                            <select id="neighborhood" class="mt-1 block w-full bg-gray-700 border-2 border-gray-600 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 p-3 text-base">
+                                <option value="" data-fee="0">-- Escolha uma opção --</option>
+                                <option value="Jardim Europa" data-fee="7.00">Jardim Europa (R$ 7,00)</option>
+                                <option value="Amec" data-fee="7.00">Amec (R$ 7,00)</option>
+                                <option value="Vale dos Sonhos 1 e 2" data-fee="8.00">Vale dos Sonhos 1 e 2 (R$ 8,00)</option>
+                                <option value="Jardim do Lago" data-fee="8.00">Jardim do Lago (R$ 8,00)</option>
+                                <option value="Casas Populares" data-fee="9.00">Casas Populares (R$ 9,00)</option>
+                                <option value="Nova Esperança 2" data-fee="9.00">Nova Esperança 2 (R$ 9,00)</option>
+                                <option value="Outro Bairro" data-fee="6.00">Outro Bairro (Taxa Padrão R$ 6,00)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="customer-address" class="block text-sm font-medium text-gray-400">Endereço Completo (Rua, Número, Complemento)</label>
+                            <input type="text" id="customer-address" class="mt-1 block w-full bg-gray-700 border-2 border-gray-600 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 p-3 text-base" placeholder="Ex: Rua das Flores, 123, apt 4" required>
+                        </div>
+                    </div>
+                     <div>
+                        <label for="payment-method" class="block text-sm font-medium text-gray-400">Forma de Pagamento</label>
+                        <select id="payment-method" class="mt-1 block w-full bg-gray-700 border-2 border-gray-600 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 p-3 text-base">
+                            <option>Pix</option>
+                            <option>Cartão de Crédito (na entrega)</option>
+                            <option>Cartão de Débito (na entrega)</option>
+                            <option>Dinheiro</option>
+                        </select>
+                        <p class="text-xs text-yellow-400 mt-2"><i class="fas fa-info-circle mr-1"></i>Observação: não aceitamos VR e vales refeição no momento.</p>
+                    </div>
+                     <div>
+                        <label for="observations" class="block text-sm font-medium text-gray-400">Observações</label>
+                        <textarea id="observations" rows="3" class="mt-1 block w-full bg-gray-700 border-2 border-gray-600 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 p-3 text-base" placeholder="Ex: Troco para R$50, sem cebola, etc."></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 bg-gray-900 border-t border-gray-700 flex justify-between items-center">
+                 <div>
+                    <span class="text-lg font-medium text-gray-300">Total do Pedido:</span>
+                    <span id="cart-total" class="text-2xl font-bold text-purple-400 ml-2">R$ 0,00</span>
+                </div>
+                <button onclick="finalizeOrder()" class="bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 transition-all flex items-center gap-2">
+                    <i class="fab fa-whatsapp"></i> Finalizar Pedido
+                </button>
+            </div>
+        </div>
+    </div>
 
-    // --- DATABASE (agora os valores padrão são apenas um fallback) ---
-    let products = [];
-    let toppings = {};
+    <!-- Confirmation Modal -->
+    <div id="confirmation-modal" class="fixed inset-0 bg-black bg-opacity-70 z-50 hidden items-center justify-center p-4">
+        <div class="bg-gray-800 text-gray-200 rounded-2xl shadow-2xl w-full max-w-lg text-center p-8">
+            <div id="confirmation-icon"><i class="fas fa-check-circle text-green-500 text-6xl mb-4"></i></div>
+            <h3 id="confirmation-title" class="text-2xl font-bold text-gray-100 mb-2">Pedido Recebido!</h3>
+            <p id="confirmation-message" class="text-gray-400 mb-6">Seu resumo está pronto. Clique no botão para enviar via WhatsApp e concluir seu pedido!</p>
+            <div id="order-summary" class="text-left bg-gray-700 p-4 rounded-lg mb-6 max-h-60 overflow-y-auto modal-body"></div>
+            <div id="initial-confirm-buttons" class="flex flex-col sm:flex-row gap-4 justify-center">
+                 <button onclick="sendOrderViaWhatsApp()" class="w-full bg-green-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-600 transition-all flex items-center justify-center gap-2">
+                    <i class="fab fa-whatsapp"></i> Enviar Pedido
+                </button>
+                <button onclick="closeConfirmationModal()" class="w-full bg-gray-600 text-gray-100 font-bold py-3 px-6 rounded-lg hover:bg-gray-500 transition-all">Fechar</button>
+            </div>
+            <div id="post-send-buttons" class="hidden flex-col gap-4 justify-center">
+                 <p class="text-sm text-yellow-400 mb-4">Após enviar a mensagem no WhatsApp, confirme abaixo para limpar seu carrinho.</p>
+                 <button onclick="confirmOrderSent()" class="w-full bg-teal-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-teal-600 transition-all flex items-center justify-center gap-2">
+                    <i class="fas fa-check-square"></i> Pedido Enviado, Limpar Carrinho
+                </button>
+                <button onclick="closeConfirmationModal()" class="w-full bg-gray-600 text-gray-100 font-bold py-3 px-6 rounded-lg hover:bg-gray-500 transition-all">Manter Carrinho e Fechar</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Custom Alert Modal -->
+    <div id="alert-modal" class="alert-modal fixed inset-0 bg-black bg-opacity-60 z-[60] hidden items-center justify-center p-4 opacity-0">
+        <div class="bg-gray-800 text-gray-200 rounded-2xl shadow-2xl w-full max-w-sm text-center p-6 transform scale-95 transition-transform">
+            <div id="alert-icon" class="mx-auto mb-4"></div>
+            <h3 id="alert-title" class="text-xl font-bold text-gray-100 mb-2">Atenção!</h3>
+            <p id="alert-message" class="text-gray-400 mb-6">Mensagem de alerta.</p>
+            <button onclick="closeAlertModal()" class="w-full bg-purple-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-purple-700 transition-all">OK</button>
+        </div>
+    </div>
 
-    // --- APPLICATION STATE (sem alterações) ---
-    let cart = [];
-    let currentItem = null;
-    let whatsAppMessage = '';
-    const CART_STORAGE_KEY = 'saborAcaiteriaCart';
-    const CUSTOMER_INFO_STORAGE_KEY = 'saborAcaiteriaCustomerInfo';
+    <!-- Admin Panel Modal -->
+    <div id="admin-modal" class="fixed inset-0 bg-black bg-opacity-80 z-[70] hidden items-center justify-center p-4">
+        <div class="bg-gray-800 text-gray-200 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+            <div class="p-4 border-b border-gray-700 flex justify-between items-center">
+                <h3 class="text-2xl font-bold text-amber-400"><i class="fas fa-user-shield mr-2"></i>Painel do Administrador</h3>
+                <button onclick="closeAdminModal()" class="text-gray-400 hover:text-red-500"><i class="fas fa-times text-2xl"></i></button>
+            </div>
+            <div id="admin-body" class="p-6 space-y-6 overflow-y-auto modal-body">
+                <!-- Admin content will be dynamically injected here -->
+            </div>
+            <div class="p-4 bg-gray-900 border-t border-gray-700 flex flex-wrap justify-between items-center gap-4">
+                <button onclick="saveAdminChanges()" class="bg-green-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-700 transition-all flex items-center gap-2">
+                    <i class="fas fa-save"></i> Salvar Alterações
+                </button>
+                <button onclick="resetToDefaults()" class="bg-red-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-700 transition-all flex items-center gap-2 text-sm">
+                    <i class="fas fa-undo"></i> Restaurar Padrão
+                </button>
+            </div>
+        </div>
+    </div>
 
-    // --- DOM ELEMENT SELECTORS (sem alterações) ---
-    const productList = document.getElementById('product-list');
-    const itemModal = document.getElementById('item-modal');
-    const cartModal = document.getElementById('cart-modal');
-    const confirmationModal = document.getElementById('confirmation-modal');
-    const adminModal = document.getElementById('admin-modal');
-    const cartButton = document.getElementById('cart-button');
-    const alertModal = document.getElementById('alert-modal');
-    const customerNameInput = document.getElementById('customer-name');
-    const customerAddressInput = document.getElementById('customer-address');
-    const neighborhoodSelect = document.getElementById('neighborhood');
-    const deliveryFields = document.getElementById('delivery-fields');
-    const deliveryOptionRadios = document.querySelectorAll('input[name="delivery_option"]');
+<script type="module">
+// --- FIREBASE IMPORTS ---
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    // --- LÓGICA DE DADOS COM FIREBASE ---
-    async function loadMenuFromFirebase() {
-        try {
-            const menuDoc = await db.collection('cardapio').doc('principal').get();
-            if (menuDoc.exists) {
-                const data = menuDoc.data();
-                products = data.products || [];
-                toppings = data.toppings || {};
-                console.log("Cardápio carregado do Firebase.");
-            } else {
-                console.log("Nenhum cardápio encontrado no Firebase. Usando e salvando o padrão.");
-                await createDefaultMenuInFirebase(); // Se não existir, cria o padrão
-            }
-        } catch (error) {
-            console.error("Erro ao carregar o cardápio do Firebase: ", error);
-            showAlert("Não foi possível carregar o cardápio. Verifique a sua conexão.", "Erro de Conexão", true);
-        }
+// --- FIREBASE CONFIG & GLOBALS ---
+const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+const appId = typeof __app_id !== 'undefined' ? __app_id : 'sabor-acaiteria-default';
+
+let app, auth, db;
+let userId;
+let unsubscribeCart, unsubscribeMenu = {}; // To hold snapshot listeners
+
+// --- DEFAULT DATABASE VALUES ---
+const defaultProducts = [
+    { id: 1, name: 'Copo 300ml', price: 14.00, disabled: false },
+    { id: 2, name: 'Copo 400ml', price: 17.00, disabled: false },
+    { id: 3, name: 'Copo 500ml', price: 20.00, disabled: false },
+    { id: 4, name: 'Barca M', price: 55.00, disabled: true },
+];
+
+const defaultToppings = {
+    free: {
+        title: '🍓 Frutas e Cremes (Grátis, escolha até 3)',
+        limit: 3,
+        items: ['Sorvete', 'Banana', 'Morango', 'Manga', 'Kiwi', 'Uva', 'Abacaxi', 'Creme de Leite Ninho', 'Creme de Cupuaçu', 'Mousse de Maracujá', 'Creme de Avelã']
+    },
+    grains: {
+        title: '🌾 Grãos e Cereais (Grátis, escolha até 2)',
+        limit: 2,
+        items: ['Granola Tradicional', 'Aveia', 'Flocos', 'Tapioca', 'Paçoca', 'Leite em Pó', 'Amendoim', 'Coco Ralado']
+    },
+    caldas: {
+        title: '🍯 Caldas (Grátis, escolha 1)',
+        limit: 1,
+        items: ['Leite Condensado', 'Calda de Chocolate', 'Calda de Morango', 'Calda de Caramelo', 'Calda de Açaí', 'Calda de Kiwi']
+    },
+    paid_tier2: {
+        title: '🍫 Doces e Chocolates (+ R$ 3,00 cada)',
+        price: 3.00,
+        items: ['Gotas de Chocolate', 'Confetes', 'Bis Picado', 'Ouro Branco', 'Sonho de Valsa']
+    },
+    paid_tier3: {
+        title: '⭐ Mais alguma coisa? (+ R$ 4,00 cada)',
+        price: 4.00,
+        items: [
+            'Sorvete', 'Banana', 'Morango', 'Manga', 'Kiwi', 'Uva', 'Abacaxi',
+            'Creme de Leite Ninho', 'Creme de Cupuaçu', 'Mousse de Maracujá', 'Creme de Avelã'
+        ]
     }
-
-    async function createDefaultMenuInFirebase() {
-        // Valores padrão caso o banco de dados esteja vazio
-        const defaultProducts = [
-            { id: 1, name: 'Copo 300ml', price: 14.00, disabled: false },
-            { id: 2, name: 'Copo 400ml', price: 17.00, disabled: false },
-            { id: 3, name: 'Copo 500ml', price: 20.00, disabled: false },
-            { id: 4, name: 'Barca M', price: 55.00, disabled: true },
-        ];
-        const defaultToppings = {
-            free: { title: '🍓 Frutas e Cremes (Grátis, escolha até 3)', limit: 3, items: ['Sorvete', 'Banana', 'Morango', 'Creme de Leite Ninho'] },
-            grains: { title: '🌾 Grãos e Cereais (Grátis, escolha até 2)', limit: 2, items: ['Granola Tradicional', 'Aveia', 'Paçoca', 'Leite em Pó'] },
-            caldas: { title: '🍯 Caldas (Grátis, escolha 1)', limit: 1, items: ['Leite Condensado', 'Calda de Chocolate', 'Calda de Morango'] },
-            paid_tier2: { title: '🍫 Doces e Chocolates (+ R$ 3,00 cada)', price: 3.00, items: ['Gotas de Chocolate', 'Confetes', 'Bis Picado'] },
-            paid_tier3: { title: '⭐ Mais alguma coisa? (+ R$ 4,00 cada)', price: 4.00, items: ['Creme de Avelã', 'Ouro Branco'] }
-        };
-        products = defaultProducts;
-        toppings = defaultToppings;
-        try {
-            await db.collection('cardapio').doc('principal').set({ products, toppings });
-            console.log("Cardápio padrão criado no Firebase.");
-        } catch (error) {
-            console.error("Erro ao criar cardápio padrão: ", error);
-        }
-    }
-
-    // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyDSIIJm5q3RbLEZsNzeFo0T6Y_mtdLKd7U",
-  authDomain: "sabor-acaiteria-oline.firebaseapp.com",
-  projectId: "sabor-acaiteria-oline",
-  storageBucket: "sabor-acaiteria-oline.firebasestorage.app",
-  messagingSenderId: "846562505902",
-  appId: "1:846562505902:web:2fb8bc72e72b457b95e93f",
-  measurementId: "G-DQ2M7J620Z"
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-    async function saveAdminChanges() {
-        // A senha agora serve para "desbloquear" a permissão de escrita
-        const adminPassword = prompt("Para salvar, confirme a senha de administrador:");
-        if (adminPassword !== "admin123") { // SENHA PADRÃO
-            showAlert("Senha incorreta. As alterações não foram salvas.", "Acesso Negado", true);
-            return;
-        }
+// --- APPLICATION STATE ---
+let products = [];
+let toppings = {};
+let cart = [];
+let currentItem = null;
+let whatsAppMessage = '';
+let customerInfo = {};
 
-        const newProducts = [];
-        document.querySelectorAll('#admin-products-list .admin-item').forEach((item, index) => {
-            const name = item.querySelector('.admin-name').value;
-            const price = parseFloat(item.querySelector('.admin-price').value);
-            const disabled = item.querySelector('.admin-disabled').checked;
-            if (name && !isNaN(price)) {
-                newProducts.push({ id: Date.now() + index, name, price, disabled });
-            }
-        });
+// --- DOM ELEMENT SELECTORS ---
+const productList = document.getElementById('product-list');
+const itemModal = document.getElementById('item-modal');
+const cartModal = document.getElementById('cart-modal');
+const confirmationModal = document.getElementById('confirmation-modal');
+const adminModal = document.getElementById('admin-modal');
+const cartButton = document.getElementById('cart-button');
+const alertModal = document.getElementById('alert-modal');
+const customerNameInput = document.getElementById('customer-name');
+const customerAddressInput = document.getElementById('customer-address');
+const neighborhoodSelect = document.getElementById('neighborhood');
+const deliveryFields = document.getElementById('delivery-fields');
+const deliveryOptionRadios = document.querySelectorAll('input[name="delivery_option"]');
 
-        const newToppings = JSON.parse(JSON.stringify(toppings));
-        Object.keys(newToppings).forEach(key => {
-            const categoryItems = [];
-            document.querySelectorAll(`#admin-toppings-${key} .admin-item`).forEach(item => {
-                const name = item.querySelector('.admin-name').value;
-                if (name) categoryItems.push(name);
-            });
-            newToppings[key].items = categoryItems;
-        });
+// --- HELPER FUNCTIONS ---
+function formatCurrency(value) {
+    if (typeof value !== 'number') value = 0;
+    return `R$ ${value.toFixed(2).replace('.', ',')}`;
+}
 
-        try {
-            await db.collection('cardapio').doc('principal').set({
-                products: newProducts,
-                toppings: newToppings
-            });
-            showAlert('Cardápio atualizado com sucesso no banco de dados!', 'Salvo!', false);
-            closeAdminModal();
-            // Recarrega os dados do Firebase e reinicia a aplicação
-            await initializeApp();
-        } catch (error) {
-            console.error("Erro ao salvar no Firebase: ", error);
-            showAlert("Erro ao salvar. Verifique o console para mais detalhes.", "Erro de Banco de Dados", true);
-        }
-    }
+// --- FIRESTORE DATA FUNCTIONS ---
 
-    async function resetToDefaults() {
-        if (confirm("Tem certeza que deseja restaurar o cardápio para os valores padrão no banco de dados? Todas as alterações serão perdidas.")) {
-            const adminPassword = prompt("Confirme a senha de administrador para restaurar:");
-            if (adminPassword === "admin123") {
-                await createDefaultMenuInFirebase();
-                showAlert("Cardápio padrão restaurado no banco de dados.", "Restaurado");
-                closeAdminModal();
-                await initializeApp();
+/**
+ * Loads the menu (products and toppings) from Firestore.
+ * If the menu doesn't exist, it uploads the default values.
+ * Sets up a real-time listener for menu changes.
+ */
+async function loadMenuFromFirestore() {
+    const menuPath = `/artifacts/${appId}/public/menu`;
+    const productsRef = doc(db, menuPath, 'products');
+    const toppingsRef = doc(db, menuPath, 'toppings');
+
+    // Detach any existing listeners
+    if (unsubscribeMenu.products) unsubscribeMenu.products();
+    if (unsubscribeMenu.toppings) unsubscribeMenu.toppings();
+
+    try {
+        // Set up listener for Products
+        unsubscribeMenu.products = onSnapshot(productsRef, async (docSnap) => {
+            if (docSnap.exists()) {
+                products = docSnap.data().data || [];
+                console.log("Products loaded from Firestore.");
             } else {
-                showAlert("Senha incorreta.", "Acesso Negado", true);
+                console.log("No products found in Firestore. Uploading default products.");
+                products = defaultProducts;
+                await setDoc(productsRef, { data: defaultProducts });
             }
-        }
+            renderProducts();
+        }, (error) => {
+            console.error("Error listening to products:", error);
+            showAlert("Não foi possível carregar os produtos. Tente recarregar a página.", "Erro de Conexão", true);
+        });
+
+        // Set up listener for Toppings
+        unsubscribeMenu.toppings = onSnapshot(toppingsRef, async (docSnap) => {
+            if (docSnap.exists()) {
+                toppings = docSnap.data().data || {};
+                console.log("Toppings loaded from Firestore.");
+            } else {
+                console.log("No toppings found in Firestore. Uploading default toppings.");
+                toppings = defaultToppings;
+                await setDoc(toppingsRef, { data: defaultToppings });
+            }
+        }, (error) => {
+            console.error("Error listening to toppings:", error);
+            showAlert("Não foi possível carregar os complementos. Tente recarregar a página.", "Erro de Conexão", true);
+        });
+
+    } catch (error) {
+        console.error("Error setting up menu listeners:", error);
+        showAlert("Erro crítico ao carregar o cardápio.", "Erro", true);
     }
+}
 
-    // --- O restante do código (lógica do carrinho, modais, etc.) permanece praticamente o mesmo ---
-    // Funções como formatCurrency, showAlert, closeAlertModal, renderCart, toggleDeliveryFields, etc.
-    // não precisam de alteração. A lógica de renderProducts e openItemModal já usará
-    // as variáveis `products` e `toppings` que são carregadas do Firebase.
 
-    // --- INICIALIZAÇÃO DA APLICAÇÃO ---
-    async function initializeApp() {
-        showLoadingIndicator(); // Mostra um indicador de carregamento
-        await loadMenuFromFirebase();
-        hideLoadingIndicator(); // Esconde o indicador
-        
-        // O resto da inicialização
-        loadCart();
-        loadCustomerInfo();
-        renderProducts(); // Renderiza os produtos carregados do Firebase
+/**
+ * Saves the entire cart array to the user's private document in Firestore.
+ */
+async function saveCartToFirestore() {
+    if (!userId) return;
+    const cartRef = doc(db, `/artifacts/${appId}/users/${userId}/cart`, 'current');
+    try {
+        await setDoc(cartRef, { items: cart });
+        console.log("Cart saved to Firestore.");
+    } catch (error) {
+        console.error("Error saving cart to Firestore:", error);
+        showAlert("Não foi possível salvar seu carrinho. Verifique sua conexão.", "Erro", true);
+    }
+}
+
+/**
+ * Sets up a real-time listener for the user's cart.
+ */
+function loadCartFromFirestore() {
+    if (!userId) return;
+    // Detach previous listener if it exists
+    if (unsubscribeCart) unsubscribeCart();
+
+    const cartRef = doc(db, `/artifacts/${appId}/users/${userId}/cart`, 'current');
+    unsubscribeCart = onSnapshot(cartRef, (docSnap) => {
+        if (docSnap.exists()) {
+            cart = docSnap.data().items || [];
+            console.log("Cart updated from Firestore.");
+        } else {
+            console.log("No cart found for user, starting fresh.");
+            cart = [];
+        }
         renderCart();
         updateCartIcon();
-        toggleDeliveryFields();
+    }, (error) => {
+        console.error("Error listening to cart:", error);
+        showAlert("Não foi possível carregar seu carrinho. Tente recarregar a página.", "Erro de Conexão", true);
+    });
+}
 
-        // Listeners de evento (sem alterações)
-        customerNameInput.addEventListener('input', saveCustomerInfo);
-        customerAddressInput.addEventListener('input', saveCustomerInfo);
-        neighborhoodSelect.addEventListener('change', () => {
-            saveCustomerInfo();
-            renderCart();
-        });
-        deliveryOptionRadios.forEach(radio => {
-            radio.addEventListener('change', () => {
-                toggleDeliveryFields();
-                saveCustomerInfo();
-            });
-        });
+/**
+ * Saves the customer's information to their private profile document.
+ */
+async function saveCustomerInfoToFirestore() {
+    if (!userId) return;
+    const info = {
+        name: customerNameInput.value,
+        address: customerAddressInput.value,
+        neighborhood: neighborhoodSelect.value,
+        deliveryOption: document.querySelector('input[name="delivery_option"]:checked').value
+    };
+    const profileRef = doc(db, `/artifacts/${appId}/users/${userId}/profile`, 'info');
+    try {
+        await setDoc(profileRef, info, { merge: true });
+        console.log("Customer info saved to Firestore.");
+    } catch (error) {
+        console.error("Error saving customer info:", error);
+        showAlert("Não foi possível salvar suas informações. Verifique sua conexão.", "Erro", true);
+    }
+}
+
+/**
+ * Loads the customer's information from Firestore.
+ */
+async function loadCustomerInfoFromFirestore() {
+    if (!userId) return;
+    const profileRef = doc(db, `/artifacts/${appId}/users/${userId}/profile`, 'info');
+    try {
+        const docSnap = await getDoc(profileRef);
+        if (docSnap.exists()) {
+            customerInfo = docSnap.data();
+            console.log("Customer info loaded from Firestore.");
+            customerNameInput.value = customerInfo.name || '';
+            customerAddressInput.value = customerInfo.address || '';
+            neighborhoodSelect.value = customerInfo.neighborhood || '';
+            if (customerInfo.deliveryOption) {
+                document.querySelector(`input[name="delivery_option"][value="${customerInfo.deliveryOption}"]`).checked = true;
+            }
+            toggleDeliveryFields();
+        } else {
+            console.log("No customer info found in Firestore.");
+        }
+    } catch (error) {
+        console.error("Error loading customer info:", error);
+    }
+}
+
+
+// --- CUSTOM ALERT FUNCTION ---
+window.showAlert = function(message, title = 'Atenção!', isError = false) {
+    document.getElementById('alert-message').textContent = message;
+    document.getElementById('alert-title').textContent = title;
+    const iconContainer = document.getElementById('alert-icon');
+    if (isError) {
+        iconContainer.innerHTML = '<i class="fas fa-exclamation-triangle text-red-500 text-5xl"></i>';
+    } else {
+        iconContainer.innerHTML = '<i class="fas fa-check-circle text-green-500 text-5xl"></i>';
+    }
+    alertModal.classList.remove('hidden');
+    setTimeout(() => {
+        alertModal.classList.remove('opacity-0');
+        alertModal.querySelector('div > div').classList.remove('scale-95');
+    }, 10);
+}
+window.closeAlertModal = function() {
+    alertModal.classList.add('opacity-0');
+    alertModal.querySelector('div > div').classList.add('scale-95');
+    setTimeout(() => { alertModal.classList.add('hidden'); }, 300);
+}
+
+// --- RENDER FUNCTIONS ---
+function renderProducts() {
+    productList.innerHTML = '';
+    if (!products || products.length === 0) {
+        productList.innerHTML = '<p class="text-gray-500 col-span-full text-center">Nenhum produto disponível no momento.</p>';
+        return;
+    }
+    products.forEach(product => {
+        if (product.disabled) return; // Don't render disabled products for customers
+
+        const productCard = `
+            <div class="bg-gray-800 border border-gray-700 rounded-xl p-4 text-center transition-all hover:shadow-lg hover:border-purple-400 cursor-pointer flex flex-col justify-between" onclick="openItemModal(${product.id})">
+                <div>
+                    <h3 class="font-bold text-xl text-gray-100">${product.name}</h3>
+                    <p class="text-2xl font-semibold text-purple-400 mt-2">${formatCurrency(product.price)}</p>
+                </div>
+                <button class="mt-4 bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-purple-500 transition-all w-full">Montar</button>
+            </div>
+        `;
+        productList.innerHTML += productCard;
+    });
+}
+
+function renderCart() {
+    const cartContainer = document.getElementById('cart-items-container');
+    const cartTotalEl = document.getElementById('cart-total');
+    const cartCountEl = document.getElementById('cart-count');
+    const checkoutForm = document.getElementById('checkout-form');
+    const summaryDetails = document.getElementById('cart-summary-details');
+
+    if (cart.length === 0) {
+        cartContainer.innerHTML = '<p class="text-gray-500 text-center">Seu carrinho está vazio.</p>';
+        checkoutForm.classList.add('hidden');
+        summaryDetails.classList.add('hidden');
+    } else {
+        checkoutForm.classList.remove('hidden');
+        summaryDetails.classList.remove('hidden');
+        cartContainer.innerHTML = cart.map((item, index) => `
+            <div class="flex items-start justify-between p-4 border-b border-gray-700">
+                <div>
+                    <p class="font-bold text-lg text-gray-100">${item.name} (x${item.quantity})</p>
+                    <div class="text-sm text-gray-400 pl-2 mt-1">
+                        ${item.toppings && item.toppings.length > 0 ? item.toppings.map(t => `<span>- ${t.name} ${t.price > 0 ? `(+ ${formatCurrency(t.price)})` : ''}</span>`).join('<br>') : '<span>- Açaí puro</span>'}
+                    </div>
+                </div>
+                <div class="text-right">
+                    <p class="font-bold text-lg text-purple-400">${formatCurrency(item.price * item.quantity)}</p>
+                    <div class="flex items-center gap-2 mt-2">
+                        <button onclick="updateQuantity(${index}, -1)" class="bg-gray-700 w-7 h-7 rounded-full font-bold text-lg flex items-center justify-center">-</button>
+                        <span class="font-bold w-5 text-center">${item.quantity}</span>
+                        <button onclick="updateQuantity(${index}, 1)" class="bg-gray-700 w-7 h-7 rounded-full font-bold text-lg flex items-center justify-center">+</button>
+                        <button onclick="removeFromCart(${index})" class="text-red-500 hover:text-red-700 ml-2"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
     }
 
-    function showLoadingIndicator() {
-        productList.innerHTML = `<div class="col-span-full text-center p-8"><i class="fas fa-spinner fa-spin text-purple-400 text-4xl"></i><p class="mt-4 text-lg">Carregando cardápio...</p></div>`;
-    }
-
-    function hideLoadingIndicator() {
-        // A função renderProducts irá limpar o indicador
+    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const deliveryOption = document.querySelector('input[name="delivery_option"]:checked').value;
+    
+    let deliveryFee = 0;
+    if (deliveryOption === 'delivery' && subtotal > 0) {
+        const selectedOption = neighborhoodSelect.options[neighborhoodSelect.selectedIndex];
+        deliveryFee = parseFloat(selectedOption.dataset.fee || 0);
     }
     
-    // As funções restantes (renderProducts, openItemModal, etc.) são chamadas após o initializeApp
-    // e usarão os dados já carregados do Firebase. O código delas não precisa mudar.
-    // Cole aqui o restante das funções do seu script anterior que não foram alteradas:
-    // formatCurrency, saveCart, loadCart, saveCustomerInfo, loadCustomerInfo, showAlert, closeAlertModal,
-    // renderProducts, renderCart, toggleDeliveryFields, openItemModal, closeItemModal, updateModalItemTotal,
-    // toggleCartModal, closeConfirmationModal, add-to-cart-btn listener, updateQuantity, removeFromCart,
-    // updateCartIcon, finalizeOrder, sendOrderViaWhatsApp, confirmOrderSent, openAdminPanel, closeAdminModal,
-    // renderAdminPanel, addAdminItem, removeAdminItem.
+    const finalTotal = subtotal + deliveryFee;
+
+    document.getElementById('cart-subtotal').textContent = formatCurrency(subtotal);
+    document.getElementById('cart-delivery-fee').textContent = formatCurrency(deliveryFee);
+    cartTotalEl.textContent = formatCurrency(finalTotal);
+    cartCountEl.textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
+}
+
+// --- DELIVERY OPTION LOGIC ---
+window.toggleDeliveryFields = function() {
+    const deliveryOption = document.querySelector('input[name="delivery_option"]:checked').value;
+    if (deliveryOption === 'takeout') {
+        deliveryFields.classList.add('hidden');
+    } else {
+        deliveryFields.classList.remove('hidden');
+    }
+    renderCart();
+}
+
+// --- MODAL LOGIC ---
+window.openItemModal = function(productId) {
+    const product = products.find(p => p.id === productId);
+    if (!product) return;
+    currentItem = {
+        id: productId, name: product.name, basePrice: product.price, price: product.price, quantity: 1, toppings: [],
+    };
+
+    document.getElementById('modal-title').textContent = `Monte seu ${product.name}`;
+    const modalBody = document.getElementById('modal-body');
+    modalBody.innerHTML = '';
+
+    const warningNote = `<div class="bg-yellow-900/50 border-l-4 border-yellow-500 text-yellow-300 p-4 rounded-md" role="alert"><div class="flex"><div class="py-1"><i class="fas fa-info-circle mr-3"></i></div><div><p class="font-bold">Atenção!</p><p class="text-sm">Escolha seus adicionais com carinho. Nossos copos têm espaço limitado e talvez não seja possível incluir todos os itens selecionados.</p></div></div></div>`;
+    modalBody.innerHTML += warningNote;
+
+    Object.entries(toppings).forEach(([key, category]) => {
+        const section = document.createElement('div');
+        let itemsHTML = category.items.map(item => `
+            <label class="flex items-center space-x-3 p-2 rounded-md hover:bg-gray-700 cursor-pointer">
+                <input type="checkbox" class="h-5 w-5 rounded border-gray-500 bg-gray-600 text-purple-600 focus:ring-purple-500" name="${key}" value="${item}" data-price="${category.price || 0}">
+                <span class="text-gray-300">${item}</span>
+            </label>
+        `).join('');
+        section.innerHTML = `<h4 class="text-lg font-bold text-gray-200 mb-2 pb-1 border-b border-gray-600">${category.title}</h4><div class="grid grid-cols-2 sm:grid-cols-3 gap-2">${itemsHTML}</div>`;
+        modalBody.appendChild(section);
+    });
     
-    // Exemplo de como a função renderProducts funciona sem alterações:
-    function renderProducts() {
-        productList.innerHTML = '';
-        if (!products || products.length === 0) {
-            productList.innerHTML = `<div class="col-span-full text-center p-8"><p class="text-red-400">Nenhum produto disponível no momento.</p></div>`;
+    modalBody.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+        checkbox.addEventListener('change', updateModalItemTotal);
+    });
+
+    updateModalItemTotal();
+    itemModal.classList.remove('hidden');
+    itemModal.classList.add('flex');
+}
+
+window.closeItemModal = function() {
+    itemModal.classList.add('hidden');
+    itemModal.classList.remove('flex');
+    currentItem = null;
+}
+
+function updateModalItemTotal() {
+    let totalFromToppings = 0;
+    const currentToppingsList = [];
+
+    Object.entries(toppings).forEach(([key, category]) => {
+        const checkboxes = document.querySelectorAll(`#modal-body input[name="${key}"]`);
+        const checkedCheckboxes = document.querySelectorAll(`#modal-body input[name="${key}"]:checked`);
+
+        if (category.limit) {
+            if (checkedCheckboxes.length >= category.limit) {
+                checkboxes.forEach(cb => { if (!cb.checked) cb.disabled = true; });
+            } else {
+                checkboxes.forEach(cb => { cb.disabled = false; });
+            }
+        }
+        
+        checkedCheckboxes.forEach(checkbox => {
+            const price = parseFloat(checkbox.dataset.price);
+            if (price > 0) totalFromToppings += price;
+            currentToppingsList.push({ name: checkbox.value, price: price });
+        });
+    });
+    
+    currentItem.price = currentItem.basePrice + totalFromToppings;
+    currentItem.toppings = currentToppingsList.sort((a, b) => a.price - b.price);
+    document.getElementById('modal-item-total').textContent = formatCurrency(currentItem.price);
+}
+
+window.toggleCartModal = function() {
+    renderCart();
+    cartModal.classList.toggle('hidden');
+    cartModal.classList.toggle('flex');
+}
+
+window.closeConfirmationModal = function() {
+    confirmationModal.classList.add('hidden');
+    confirmationModal.classList.remove('flex');
+    setTimeout(() => {
+        document.getElementById('confirmation-icon').innerHTML = '<i class="fas fa-check-circle text-green-500 text-6xl mb-4"></i>';
+        document.getElementById('confirmation-title').textContent = 'Pedido Recebido!';
+        document.getElementById('confirmation-message').textContent = 'Seu resumo está pronto. Clique no botão para enviar via WhatsApp e concluir seu pedido!';
+        document.getElementById('initial-confirm-buttons').classList.remove('hidden');
+        document.getElementById('initial-confirm-buttons').classList.add('flex');
+        document.getElementById('post-send-buttons').classList.add('hidden');
+        document.getElementById('post-send-buttons').classList.remove('flex');
+    }, 300);
+}
+
+// --- CART LOGIC ---
+document.getElementById('add-to-cart-btn').addEventListener('click', () => {
+    const existingItemIndex = cart.findIndex(item => {
+        if (item.id !== currentItem.id || item.toppings.length !== currentItem.toppings.length) return false;
+        const currentToppingsSet = new Set(currentItem.toppings.map(t => t.name));
+        const existingToppingsSet = new Set(item.toppings.map(t => t.name));
+        if (currentToppingsSet.size !== existingToppingsSet.size) return false;
+        return [...currentToppingsSet].every(t => existingToppingsSet.has(t));
+    });
+
+    if (existingItemIndex > -1) {
+        cart[existingItemIndex].quantity++;
+    } else {
+        cart.push({ ...currentItem });
+    }
+    
+    saveCartToFirestore();
+    closeItemModal();
+});
+
+window.updateQuantity = function(index, change) {
+    if (cart[index].quantity + change > 0) {
+        cart[index].quantity += change;
+    } else {
+        cart.splice(index, 1);
+    }
+    saveCartToFirestore();
+}
+
+window.removeFromCart = function(index) {
+    cart.splice(index, 1);
+    saveCartToFirestore();
+}
+
+function updateCartIcon() {
+    const cartCountEl = document.getElementById('cart-count');
+    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+    cartCountEl.textContent = totalItems;
+    if (totalItems > 0) {
+        cartButton.classList.remove('hidden');
+    } else {
+         cartButton.classList.add('hidden');
+         if (cartModal.classList.contains('flex')) {
+             toggleCartModal();
+         }
+    }
+}
+
+// --- ORDER FINALIZATION LOGIC ---
+window.finalizeOrder = function() {
+    if (cart.length === 0) {
+        showAlert('Seu carrinho está vazio!', 'Carrinho Vazio', true);
+        return;
+    }
+    const name = customerNameInput.value.trim();
+    const address = customerAddressInput.value.trim();
+    const neighborhood = neighborhoodSelect.value;
+    const payment = document.getElementById('payment-method').value;
+    const obs = document.getElementById('observations').value.trim();
+    const deliveryOption = document.querySelector('input[name="delivery_option"]:checked').value;
+
+    if (!name) {
+        showAlert('Por favor, preencha seu Nome para continuar.', 'Dados Incompletos', true);
+        return;
+    }
+    
+    let deliveryFee = 0;
+    let summary = `*NOVO PEDIDO - SABOR AÇAÍTERIA*\n\n*Cliente:* ${name}\n`;
+
+    if (deliveryOption === 'delivery') {
+        if (!address || !neighborhood) {
+            showAlert('Por favor, selecione o Bairro e preencha o Endereço para entrega.', 'Dados Incompletos', true);
             return;
         }
-        products.forEach(product => {
-            if (product.disabled) return;
-
-            const productCard = `
-                <div class="bg-gray-800 border border-gray-700 rounded-xl p-4 text-center transition-all hover:shadow-lg hover:border-purple-400 cursor-pointer flex flex-col justify-between" onclick="openItemModal(${product.id})">
-                    <div>
-                        <h3 class="font-bold text-xl text-gray-100">${product.name}</h3>
-                        <p class="text-2xl font-semibold text-purple-400 mt-2">${formatCurrency(product.price)}</p>
-                    </div>
-                    <button class="mt-4 bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-purple-500 transition-all w-full">Montar</button>
-                </div>
-            `;
-            productList.innerHTML += productCard;
-        });
+        summary += `*Opção:* ENTREGA\n*Tempo Estimado:* 20-60 min\n*Endereço:* ${address}, ${neighborhood}\n\n`;
+        const selectedOption = neighborhoodSelect.options[neighborhoodSelect.selectedIndex];
+        deliveryFee = parseFloat(selectedOption.dataset.fee || 0);
+    } else {
+        summary += `*Opção:* RETIRAR NA LOJA\n*Tempo Estimado:* 20-30 min\n\n`;
     }
-    
-    // Cole aqui as outras funções que não foram modificadas...
-    // (O código completo já está no seu script original, basta copiar as funções que não foram substituídas acima)
-    // Para manter a resposta concisa, não vou repetir todas elas aqui, mas elas são necessárias para o funcionamento.
-    // As funções mais importantes que foram alteradas são: loadMenuFromFirebase, saveAdminChanges, resetToDefaults, e initializeApp.
-    
-    // --- Funções não alteradas (copiadas do script anterior) ---
-    function formatCurrency(value) { return `R$ ${value.toFixed(2).replace('.', ',')}`; }
-    function saveCart() { localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart)); }
-    function loadCart() { const savedCart = localStorage.getItem(CART_STORAGE_KEY); if (savedCart) cart = JSON.parse(savedCart); }
-    function saveCustomerInfo() { const info = { name: customerNameInput.value, address: customerAddressInput.value, neighborhood: neighborhoodSelect.value, deliveryOption: document.querySelector('input[name="delivery_option"]:checked').value }; localStorage.setItem(CUSTOMER_INFO_STORAGE_KEY, JSON.stringify(info)); }
-    function loadCustomerInfo() { const savedInfo = localStorage.getItem(CUSTOMER_INFO_STORAGE_KEY); if (savedInfo) { const info = JSON.parse(savedInfo); customerNameInput.value = info.name || ''; customerAddressInput.value = info.address || ''; neighborhoodSelect.value = info.neighborhood || ''; if (info.deliveryOption) { document.querySelector(`input[name="delivery_option"][value="${info.deliveryOption}"]`).checked = true; } } }
-    function showAlert(message, title = 'Atenção!', isError = false) { document.getElementById('alert-message').textContent = message; document.getElementById('alert-title').textContent = title; const iconContainer = document.getElementById('alert-icon'); if (isError) { iconContainer.innerHTML = '<i class="fas fa-exclamation-triangle text-red-500 text-5xl"></i>'; } else { iconContainer.innerHTML = '<i class="fas fa-check-circle text-green-500 text-5xl"></i>'; } alertModal.classList.remove('hidden'); setTimeout(() => { alertModal.classList.remove('opacity-0'); alertModal.querySelector('div > div').classList.remove('scale-95'); }, 10); }
-    function closeAlertModal() { alertModal.classList.add('opacity-0'); alertModal.querySelector('div > div').classList.add('scale-95'); setTimeout(() => { alertModal.classList.add('hidden'); }, 300); }
-    function renderCart() { const cartContainer = document.getElementById('cart-items-container'); const cartTotalEl = document.getElementById('cart-total'); const cartCountEl = document.getElementById('cart-count'); const checkoutForm = document.getElementById('checkout-form'); const summaryDetails = document.getElementById('cart-summary-details'); if (cart.length === 0) { cartContainer.innerHTML = '<p class="text-gray-500 text-center">Seu carrinho está vazio.</p>'; checkoutForm.classList.add('hidden'); summaryDetails.classList.add('hidden'); } else { checkoutForm.classList.remove('hidden'); summaryDetails.classList.remove('hidden'); cartContainer.innerHTML = cart.map((item, index) => `<div class="flex items-start justify-between p-4 border-b border-gray-700"><div><p class="font-bold text-lg text-gray-100">${item.name} (x${item.quantity})</p><div class="text-sm text-gray-400 pl-2 mt-1">${item.toppings.length > 0 ? item.toppings.map(t => `<span>- ${t.name} ${t.price > 0 ? `(+ ${formatCurrency(t.price)})` : ''}</span>`).join('<br>') : '<span>- Açaí puro</span>'}</div></div><div class="text-right"><p class="font-bold text-lg text-purple-400">${formatCurrency(item.price * item.quantity)}</p><div class="flex items-center gap-2 mt-2"><button onclick="updateQuantity(${index}, -1)" class="bg-gray-700 w-7 h-7 rounded-full font-bold text-lg flex items-center justify-center">-</button><span class="font-bold w-5 text-center">${item.quantity}</span><button onclick="updateQuantity(${index}, 1)" class="bg-gray-700 w-7 h-7 rounded-full font-bold text-lg flex items-center justify-center">+</button><button onclick="removeFromCart(${index})" class="text-red-500 hover:text-red-700 ml-2"><i class="fas fa-trash"></i></button></div></div></div>`).join(''); } const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0); const deliveryOption = document.querySelector('input[name="delivery_option"]:checked').value; let deliveryFee = 0; if (deliveryOption === 'delivery' && subtotal > 0) { const selectedOption = neighborhoodSelect.options[neighborhoodSelect.selectedIndex]; deliveryFee = parseFloat(selectedOption.dataset.fee || 0); } const finalTotal = subtotal + deliveryFee; document.getElementById('cart-subtotal').textContent = formatCurrency(subtotal); document.getElementById('cart-delivery-fee').textContent = formatCurrency(deliveryFee); cartTotalEl.textContent = formatCurrency(finalTotal); cartCountEl.textContent = cart.reduce((sum, item) => sum + item.quantity, 0); }
-    function toggleDeliveryFields() { const deliveryOption = document.querySelector('input[name="delivery_option"]:checked').value; if (deliveryOption === 'takeout') { deliveryFields.classList.add('hidden'); } else { deliveryFields.classList.remove('hidden'); } renderCart(); }
-    function openItemModal(productId) { const product = products.find(p => p.id === productId); if (!product) return; currentItem = { id: productId, name: product.name, basePrice: product.price, price: product.price, quantity: 1, toppings: [], }; document.getElementById('modal-title').textContent = `Monte seu ${product.name}`; const modalBody = document.getElementById('modal-body'); modalBody.innerHTML = ''; const warningNote = `<div class="bg-yellow-900/50 border-l-4 border-yellow-500 text-yellow-300 p-4 rounded-md" role="alert"><div class="flex"><div class="py-1"><i class="fas fa-info-circle mr-3"></i></div><div><p class="font-bold">Atenção!</p><p class="text-sm">Escolha seus adicionais com carinho. Nossos copos têm espaço limitado e talvez não seja possível incluir todos os itens selecionados.</p></div></div></div>`; modalBody.innerHTML += warningNote; Object.entries(toppings).forEach(([key, category]) => { const section = document.createElement('div'); let itemsHTML = category.items.map(item => `<label class="flex items-center space-x-3 p-2 rounded-md hover:bg-gray-700 cursor-pointer"><input type="checkbox" class="h-5 w-5 rounded border-gray-500 bg-gray-600 text-purple-600 focus:ring-purple-500" name="${key}" value="${item}" data-price="${category.price || 0}"><span class="text-gray-300">${item}</span></label>`).join(''); section.innerHTML = `<h4 class="text-lg font-bold text-gray-200 mb-2 pb-1 border-b border-gray-600">${category.title}</h4><div class="grid grid-cols-2 sm:grid-cols-3 gap-2">${itemsHTML}</div>`; modalBody.appendChild(section); }); modalBody.querySelectorAll('input[type="checkbox"]').forEach(checkbox => { checkbox.addEventListener('change', updateModalItemTotal); }); updateModalItemTotal(); itemModal.classList.remove('hidden'); itemModal.classList.add('flex'); }
-    function closeItemModal() { itemModal.classList.add('hidden'); itemModal.classList.remove('flex'); currentItem = null; }
-    function updateModalItemTotal() { let totalFromToppings = 0; const currentToppingsList = []; Object.entries(toppings).forEach(([key, category]) => { const checkboxes = document.querySelectorAll(`#modal-body input[name="${key}"]`); const checkedCheckboxes = document.querySelectorAll(`#modal-body input[name="${key}"]:checked`); if (category.limit) { if (checkedCheckboxes.length >= category.limit) { checkboxes.forEach(cb => { if (!cb.checked) cb.disabled = true; }); } else { checkboxes.forEach(cb => { cb.disabled = false; }); } } checkedCheckboxes.forEach(checkbox => { const price = parseFloat(checkbox.dataset.price); if (price > 0) totalFromToppings += price; currentToppingsList.push({ name: checkbox.value, price: price }); }); }); currentItem.price = currentItem.basePrice + totalFromToppings; currentItem.toppings = currentToppingsList.sort((a, b) => a.price - b.price); document.getElementById('modal-item-total').textContent = formatCurrency(currentItem.price); }
-    function toggleCartModal() { renderCart(); cartModal.classList.toggle('hidden'); cartModal.classList.toggle('flex'); }
-    function closeConfirmationModal() { confirmationModal.classList.add('hidden'); confirmationModal.classList.remove('flex'); setTimeout(() => { document.getElementById('confirmation-icon').innerHTML = '<i class="fas fa-check-circle text-green-500 text-6xl mb-4"></i>'; document.getElementById('confirmation-title').textContent = 'Pedido Recebido!'; document.getElementById('confirmation-message').textContent = 'Seu resumo está pronto. Clique no botão para enviar via WhatsApp e concluir seu pedido!'; document.getElementById('initial-confirm-buttons').classList.remove('hidden'); document.getElementById('initial-confirm-buttons').classList.add('flex'); document.getElementById('post-send-buttons').classList.add('hidden'); document.getElementById('post-send-buttons').classList.remove('flex'); }, 300); }
-    document.getElementById('add-to-cart-btn').addEventListener('click', () => { const existingItemIndex = cart.findIndex(item => { if (item.id !== currentItem.id || item.toppings.length !== currentItem.toppings.length) return false; const currentToppingsSet = new Set(currentItem.toppings.map(t => t.name)); const existingToppingsSet = new Set(item.toppings.map(t => t.name)); if (currentToppingsSet.size !== existingToppingsSet.size) return false; return [...currentToppingsSet].every(t => existingToppingsSet.has(t)); }); if (existingItemIndex > -1) { cart[existingItemIndex].quantity++; } else { cart.push({ ...currentItem }); } saveCart(); closeItemModal(); renderCart(); updateCartIcon(); });
-    function updateQuantity(index, change) { if (cart[index].quantity + change > 0) { cart[index].quantity += change; } else { removeFromCart(index); return; } saveCart(); renderCart(); updateCartIcon(); }
-    function removeFromCart(index) { cart.splice(index, 1); saveCart(); renderCart(); updateCartIcon(); }
-    function updateCartIcon() { const cartCountEl = document.getElementById('cart-count'); const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0); cartCountEl.textContent = totalItems; if (totalItems > 0) { cartButton.classList.remove('hidden'); } else { cartButton.classList.add('hidden'); if (cartModal.classList.contains('flex')) { toggleCartModal(); } } }
-    function finalizeOrder() { if (cart.length === 0) { showAlert('Seu carrinho está vazio!', 'Carrinho Vazio', true); return; } const name = customerNameInput.value.trim(); const address = customerAddressInput.value.trim(); const neighborhood = neighborhoodSelect.value; const payment = document.getElementById('payment-method').value; const obs = document.getElementById('observations').value.trim(); const deliveryOption = document.querySelector('input[name="delivery_option"]:checked').value; if (!name) { showAlert('Por favor, preencha seu Nome para continuar.', 'Dados Incompletos', true); return; } let deliveryFee = 0; let summary = `*NOVO PEDIDO - SABOR AÇAÍTERIA*\n\n*Cliente:* ${name}\n`; if (deliveryOption === 'delivery') { if (!address || !neighborhood) { showAlert('Por favor, selecione o Bairro e preencha o Endereço para entrega.', 'Dados Incompletos', true); return; } summary += `*Opção:* ENTREGA\n*Tempo Estimado:* 20-60 min\n*Endereço:* ${address}, ${neighborhood}\n\n`; const selectedOption = neighborhoodSelect.options[neighborhoodSelect.selectedIndex]; deliveryFee = parseFloat(selectedOption.dataset.fee || 0); } else { summary += `*Opção:* RETIRAR NA LOJA\n*Tempo Estimado:* 20-30 min\n\n`; } summary += `*ITENS DO PEDIDO:*\n------------------------\n`; cart.forEach(item => { summary += `*${item.quantity}x ${item.name}*\n`; if (item.toppings.length > 0) { item.toppings.forEach(t => { summary += `  - ${t.name}\n`; }); } else { summary += `  - Açaí puro\n`; } summary += `Subtotal: ${formatCurrency(item.price * item.quantity)}\n------------------------\n`; }); const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0); const finalTotal = subtotal + deliveryFee; summary += `\n*Subtotal dos Itens: ${formatCurrency(subtotal)}*\n`; if (deliveryOption === 'delivery') summary += `*Taxa de Entrega: ${formatCurrency(deliveryFee)}*\n`; summary += `*TOTAL DO PEDIDO: ${formatCurrency(finalTotal)}*\n*Forma de Pagamento:* ${payment}\n`; if (obs) summary += `*Observações:* ${obs}\n`; whatsAppMessage = encodeURIComponent(summary); document.getElementById('order-summary').innerHTML = summary.replace(/\n/g, '<br>').replace(/\*(.*?)\*/g, '<strong>$1</strong>'); toggleCartModal(); confirmationModal.classList.remove('hidden'); confirmationModal.classList.add('flex'); }
-    function sendOrderViaWhatsApp() { const yourNumber = '5594991623576'; const url = `https://wa.me/${yourNumber}?text=${whatsAppMessage}`; window.open(url, '_blank'); document.getElementById('confirmation-icon').innerHTML = '<i class="fab fa-whatsapp-square text-green-400 text-6xl mb-4"></i>'; document.getElementById('confirmation-title').textContent = 'Quase lá!'; document.getElementById('confirmation-message').textContent = 'A janela do WhatsApp foi aberta. Após enviar sua mensagem, clique no botão abaixo para confirmar e limpar seu carrinho.'; document.getElementById('initial-confirm-buttons').classList.add('hidden'); document.getElementById('post-send-buttons').classList.remove('hidden'); document.getElementById('post-send-buttons').classList.add('flex'); }
-    function confirmOrderSent() { cart = []; saveCart(); closeConfirmationModal(); renderCart(); updateCartIcon(); showAlert('Ótimo! Seu carrinho foi limpo. Aguarde a confirmação da loja no WhatsApp.', 'Pedido Enviado'); }
-    function openAdminPanel(event) { event.preventDefault(); const password = prompt("Por favor, insira a senha de administrador:"); if (password === "admin123") { renderAdminPanel(); adminModal.classList.remove('hidden'); adminModal.classList.add('flex'); } else if (password) { alert("Senha incorreta!"); } }
-    function closeAdminModal() { adminModal.classList.add('hidden'); adminModal.classList.remove('flex'); }
-    function renderAdminPanel() { const adminBody = document.getElementById('admin-body'); adminBody.innerHTML = ''; let productsHTML = `<div class="p-4 bg-gray-900/50 rounded-lg"><h4 class="text-xl font-bold text-purple-400 mb-4">Tamanhos (Produtos)</h4><div id="admin-products-list" class="space-y-3">`; products.forEach((product, index) => { productsHTML += `<div class="grid grid-cols-1 md:grid-cols-4 gap-3 items-center p-2 bg-gray-700 rounded-md admin-item" data-type="product" data-index="${index}"><input type="text" value="${product.name}" class="admin-name col-span-2 bg-gray-600 p-2 rounded-md border border-gray-500" placeholder="Nome do Produto"><input type="number" value="${product.price.toFixed(2)}" class="admin-price bg-gray-600 p-2 rounded-md border border-gray-500" placeholder="Preço"><div class="flex items-center justify-between gap-2"><label class="flex items-center gap-2 text-sm cursor-pointer"><input type="checkbox" class="admin-disabled h-5 w-5" ${product.disabled ? 'checked' : ''}> Bloquear</label><button onclick="removeAdminItem(this)" class="text-red-500 hover:text-red-400"><i class="fas fa-trash-alt"></i></button></div></div>`; }); productsHTML += `</div><button onclick="addAdminItem('product')" class="mt-4 bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-500 text-sm"><i class="fas fa-plus mr-2"></i>Adicionar Tamanho</button></div>`; adminBody.innerHTML += productsHTML; let toppingsHTML = `<div class="p-4 bg-gray-900/50 rounded-lg mt-6"><h4 class="text-xl font-bold text-purple-400 mb-4">Complementos</h4>`; Object.entries(toppings).forEach(([key, category]) => { toppingsHTML += `<div class="mt-4"><h5 class="font-semibold text-gray-300 mb-2">${category.title}</h5><div id="admin-toppings-${key}" class="space-y-2">`; category.items.forEach((item, index) => { toppingsHTML += `<div class="flex items-center gap-3 p-2 bg-gray-700 rounded-md admin-item" data-type="topping" data-category="${key}" data-index="${index}"><input type="text" value="${item}" class="admin-name flex-grow bg-gray-600 p-2 rounded-md border border-gray-500" placeholder="Nome do Complemento"><button onclick="removeAdminItem(this)" class="text-red-500 hover:text-red-400"><i class="fas fa-trash-alt"></i></button></div>`; }); toppingsHTML += `</div><button onclick="addAdminItem('topping', '${key}')" class="mt-3 bg-blue-600 text-white font-semibold py-1 px-3 rounded-lg hover:bg-blue-500 text-xs"><i class="fas fa-plus mr-1"></i>Adicionar Complemento</button></div>`; }); toppingsHTML += `</div>`; adminBody.innerHTML += toppingsHTML; }
-    function addAdminItem(type, categoryKey = '') { const newItemHTML = (type === 'product') ? `<div class="grid grid-cols-1 md:grid-cols-4 gap-3 items-center p-2 bg-gray-700 rounded-md admin-item" data-type="product"><input type="text" value="Novo Produto" class="admin-name col-span-2 bg-gray-600 p-2 rounded-md border border-gray-500"><input type="number" value="0.00" class="admin-price bg-gray-600 p-2 rounded-md border border-gray-500"><div class="flex items-center justify-between gap-2"><label class="flex items-center gap-2 text-sm cursor-pointer"><input type="checkbox" class="admin-disabled h-5 w-5"> Bloquear</label><button onclick="removeAdminItem(this)" class="text-red-500 hover:text-red-400"><i class="fas fa-trash-alt"></i></button></div></div>` : `<div class="flex items-center gap-3 p-2 bg-gray-700 rounded-md admin-item" data-type="topping" data-category="${categoryKey}"><input type="text" value="Novo Complemento" class="admin-name flex-grow bg-gray-600 p-2 rounded-md border border-gray-500"><button onclick="removeAdminItem(this)" class="text-red-500 hover:text-red-400"><i class="fas fa-trash-alt"></i></button></div>`; const containerId = (type === 'product') ? 'admin-products-list' : `admin-toppings-${categoryKey}`; document.getElementById(containerId).insertAdjacentHTML('beforeend', newItemHTML); }
-    function removeAdminItem(button) { button.closest('.admin-item').remove(); }
 
-    window.onload = initializeApp;
+    summary += `*ITENS DO PEDIDO:*\n------------------------\n`;
+    cart.forEach(item => {
+        summary += `*${item.quantity}x ${item.name}*\n`;
+        if (item.toppings.length > 0) {
+            item.toppings.forEach(t => { summary += `  - ${t.name}\n`; });
+        } else {
+            summary += `  - Açaí puro\n`;
+        }
+        summary += `Subtotal: ${formatCurrency(item.price * item.quantity)}\n------------------------\n`;
+    });
+
+    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const finalTotal = subtotal + deliveryFee;
+    summary += `\n*Subtotal dos Itens: ${formatCurrency(subtotal)}*\n`;
+    if (deliveryOption === 'delivery') summary += `*Taxa de Entrega: ${formatCurrency(deliveryFee)}*\n`;
+    summary += `*TOTAL DO PEDIDO: ${formatCurrency(finalTotal)}*\n*Forma de Pagamento:* ${payment}\n`;
+    if (obs) summary += `*Observações:* ${obs}\n`;
+
+    whatsAppMessage = encodeURIComponent(summary);
+    document.getElementById('order-summary').innerHTML = summary.replace(/\n/g, '<br>').replace(/\*(.*?)\*/g, '<strong>$1</strong>');
+    toggleCartModal(); 
+    confirmationModal.classList.remove('hidden');
+    confirmationModal.classList.add('flex');
+}
+
+window.sendOrderViaWhatsApp = function() {
+    const yourNumber = '5594991623576'; 
+    const url = `https://wa.me/${yourNumber}?text=${whatsAppMessage}`;
+    window.open(url, '_blank');
+    
+    document.getElementById('confirmation-icon').innerHTML = '<i class="fab fa-whatsapp-square text-green-400 text-6xl mb-4"></i>';
+    document.getElementById('confirmation-title').textContent = 'Quase lá!';
+    document.getElementById('confirmation-message').textContent = 'A janela do WhatsApp foi aberta. Após enviar sua mensagem, clique no botão abaixo para confirmar e limpar seu carrinho.';
+    document.getElementById('initial-confirm-buttons').classList.add('hidden');
+    document.getElementById('post-send-buttons').classList.remove('hidden');
+    document.getElementById('post-send-buttons').classList.add('flex');
+}
+
+window.confirmOrderSent = async function() {
+    cart = [];
+    await saveCartToFirestore();
+    closeConfirmationModal();
+    showAlert('Ótimo! Seu carrinho foi limpo. Aguarde a confirmação da loja no WhatsApp.', 'Pedido Enviado');
+}
+
+// --- ADMIN PANEL LOGIC ---
+window.openAdminPanel = function(event) {
+    event.preventDefault();
+    const password = prompt("Por favor, insira a senha de administrador:");
+    if (password === "admin123") { // SENHA PADRÃO - Altere se desejar
+        renderAdminPanel();
+        adminModal.classList.remove('hidden');
+        adminModal.classList.add('flex');
+    } else if (password) {
+        alert("Senha incorreta!");
+    }
+}
+
+window.closeAdminModal = function() {
+    adminModal.classList.add('hidden');
+    adminModal.classList.remove('flex');
+}
+
+function renderAdminPanel() {
+    const adminBody = document.getElementById('admin-body');
+    adminBody.innerHTML = ''; // Clear previous content
+
+    // Section for Products (Tamanhos)
+    let productsHTML = `<div class="p-4 bg-gray-900/50 rounded-lg"><h4 class="text-xl font-bold text-purple-400 mb-4">Tamanhos (Produtos)</h4><div id="admin-products-list" class="space-y-3">`;
+    products.forEach((product, index) => {
+        productsHTML += `
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-3 items-center p-2 bg-gray-700 rounded-md admin-item" data-type="product" data-index="${index}">
+                <input type="text" value="${product.name}" class="admin-name col-span-2 bg-gray-600 p-2 rounded-md border border-gray-500" placeholder="Nome do Produto">
+                <input type="number" value="${product.price.toFixed(2)}" class="admin-price bg-gray-600 p-2 rounded-md border border-gray-500" placeholder="Preço">
+                <div class="flex items-center justify-between gap-2">
+                    <label class="flex items-center gap-2 text-sm cursor-pointer"><input type="checkbox" class="admin-disabled h-5 w-5" ${product.disabled ? 'checked' : ''}> Bloquear</label>
+                    <button onclick="removeAdminItem(this)" class="text-red-500 hover:text-red-400"><i class="fas fa-trash-alt"></i></button>
+                </div>
+            </div>`;
+    });
+    productsHTML += `</div><button onclick="addAdminItem('product')" class="mt-4 bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-500 text-sm"><i class="fas fa-plus mr-2"></i>Adicionar Tamanho</button></div>`;
+    adminBody.innerHTML += productsHTML;
+
+    // Section for Toppings
+    let toppingsHTML = `<div class="p-4 bg-gray-900/50 rounded-lg mt-6"><h4 class="text-xl font-bold text-purple-400 mb-4">Complementos</h4>`;
+    Object.entries(toppings).forEach(([key, category]) => {
+        toppingsHTML += `<div class="mt-4"><h5 class="font-semibold text-gray-300 mb-2">${category.title}</h5><div id="admin-toppings-${key}" class="space-y-2">`;
+        category.items.forEach((item, index) => {
+            toppingsHTML += `
+                <div class="flex items-center gap-3 p-2 bg-gray-700 rounded-md admin-item" data-type="topping" data-category="${key}" data-index="${index}">
+                    <input type="text" value="${item}" class="admin-name flex-grow bg-gray-600 p-2 rounded-md border border-gray-500" placeholder="Nome do Complemento">
+                    <button onclick="removeAdminItem(this)" class="text-red-500 hover:text-red-400"><i class="fas fa-trash-alt"></i></button>
+                </div>`;
+        });
+        toppingsHTML += `</div><button onclick="addAdminItem('topping', '${key}')" class="mt-3 bg-blue-600 text-white font-semibold py-1 px-3 rounded-lg hover:bg-blue-500 text-xs"><i class="fas fa-plus mr-1"></i>Adicionar Complemento</button></div>`;
+    });
+    toppingsHTML += `</div>`;
+    adminBody.innerHTML += toppingsHTML;
+}
+
+window.addAdminItem = function(type, categoryKey = '') {
+    const newItemHTML = (type === 'product')
+        ? `<div class="grid grid-cols-1 md:grid-cols-4 gap-3 items-center p-2 bg-gray-700 rounded-md admin-item" data-type="product">
+               <input type="text" value="Novo Produto" class="admin-name col-span-2 bg-gray-600 p-2 rounded-md border border-gray-500">
+               <input type="number" value="0.00" class="admin-price bg-gray-600 p-2 rounded-md border border-gray-500">
+               <div class="flex items-center justify-between gap-2">
+                   <label class="flex items-center gap-2 text-sm cursor-pointer"><input type="checkbox" class="admin-disabled h-5 w-5"> Bloquear</label>
+                   <button onclick="removeAdminItem(this)" class="text-red-500 hover:text-red-400"><i class="fas fa-trash-alt"></i></button>
+               </div>
+           </div>`
+        : `<div class="flex items-center gap-3 p-2 bg-gray-700 rounded-md admin-item" data-type="topping" data-category="${categoryKey}">
+               <input type="text" value="Novo Complemento" class="admin-name flex-grow bg-gray-600 p-2 rounded-md border border-gray-500">
+               <button onclick="removeAdminItem(this)" class="text-red-500 hover:text-red-400"><i class="fas fa-trash-alt"></i></button>
+           </div>`;
+    
+    const containerId = (type === 'product') ? 'admin-products-list' : `admin-toppings-${categoryKey}`;
+    document.getElementById(containerId).insertAdjacentHTML('beforeend', newItemHTML);
+}
+
+window.removeAdminItem = function(button) {
+    button.closest('.admin-item').remove();
+}
+
+window.saveAdminChanges = async function() {
+    const menuPath = `/artifacts/${appId}/public/menu`;
+    const productsRef = doc(db, menuPath, 'products');
+    const toppingsRef = doc(db, menuPath, 'toppings');
+
+    // Save products
+    const newProducts = [];
+    document.querySelectorAll('#admin-products-list .admin-item').forEach((item, index) => {
+        const name = item.querySelector('.admin-name').value;
+        const price = parseFloat(item.querySelector('.admin-price').value);
+        const disabled = item.querySelector('.admin-disabled').checked;
+        if (name && !isNaN(price)) {
+            newProducts.push({ id: Date.now() + index, name, price, disabled });
+        }
+    });
+    
+    // Save toppings
+    const newToppings = JSON.parse(JSON.stringify(defaultToppings)); // Start with default structure
+    Object.keys(newToppings).forEach(key => {
+        const categoryItems = [];
+        document.querySelectorAll(`#admin-toppings-${key} .admin-item`).forEach(item => {
+            const name = item.querySelector('.admin-name').value;
+            if (name) categoryItems.push(name);
+        });
+        newToppings[key].items = categoryItems;
+    });
+
+    try {
+        await setDoc(productsRef, { data: newProducts });
+        await setDoc(toppingsRef, { data: newToppings });
+        showAlert('Cardápio atualizado com sucesso!', 'Salvo!', false);
+        closeAdminModal();
+    } catch (error) {
+        console.error("Error saving admin changes:", error);
+        showAlert("Falha ao salvar as alterações. Verifique sua conexão.", "Erro", true);
+    }
+}
+
+window.resetToDefaults = async function() {
+    if (confirm("Tem certeza que deseja restaurar o cardápio para os valores padrão? Todas as suas alterações serão perdidas.")) {
+        const menuPath = `/artifacts/${appId}/public/menu`;
+        const productsRef = doc(db, menuPath, 'products');
+        const toppingsRef = doc(db, menuPath, 'toppings');
+        try {
+            await setDoc(productsRef, { data: defaultProducts });
+            await setDoc(toppingsRef, { data: defaultToppings });
+            showAlert('Cardápio restaurado para o padrão.', 'Restaurado');
+            closeAdminModal();
+        } catch (error) {
+            console.error("Error resetting to defaults:", error);
+            showAlert("Falha ao restaurar. Tente novamente.", "Erro", true);
+        }
+    }
+}
+
+// --- INITIALIZATION ---
+function startApp() {
+    // This function is called after Firebase auth is ready
+    loadMenuFromFirestore();
+    loadCartFromFirestore();
+    loadCustomerInfoFromFirestore();
+    
+    renderProducts();
+    renderCart();
+    updateCartIcon();
+    toggleDeliveryFields();
+
+    // Event listeners that depend on user info
+    customerNameInput.addEventListener('input', saveCustomerInfoToFirestore);
+    customerAddressInput.addEventListener('input', saveCustomerInfoToFirestore);
+    neighborhoodSelect.addEventListener('change', () => {
+        saveCustomerInfoToFirestore();
+        renderCart();
+    });
+    deliveryOptionRadios.forEach(radio => {
+        radio.addEventListener('change', () => {
+            toggleDeliveryFields();
+            saveCustomerInfoToFirestore();
+        });
+    });
+}
+
+async function initializeFirebase() {
+    if (!firebaseConfig || Object.keys(firebaseConfig).length === 0) {
+        console.error("Firebase config is missing!");
+        document.body.innerHTML = '<div class="text-center text-red-500 p-8">Erro de configuração. A aplicação não pode ser carregada.</div>';
+        return;
+    }
+
+    try {
+        app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        auth = getAuth(app);
+        
+        await setPersistence(auth, browserLocalPersistence);
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                console.log("User is signed in:", user.uid);
+                userId = user.uid;
+            } else {
+                console.log("User is not signed in. Attempting to sign in.");
+                try {
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                } catch (error) {
+                    console.error("Anonymous sign-in failed:", error);
+                    showAlert("Não foi possível iniciar uma sessão. O app pode não funcionar corretamente.", "Erro de Autenticação", true);
+                }
+                return; // onAuthStateChanged will re-trigger with the new user
+            }
+            
+            document.getElementById('user-id-display').textContent = `ID da Sessão: ${userId}`;
+            // Once we have a user, start the main application logic
+            startApp();
+        });
+
+    } catch (error) {
+        console.error("Firebase initialization failed:", error);
+        document.body.innerHTML = `<div class="text-center text-red-500 p-8">Falha ao conectar com o servidor: ${error.message}</div>`;
+    }
+}
+
+window.onload = initializeFirebase;
 
 </script>
 </body>
