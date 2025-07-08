@@ -48,6 +48,10 @@
         input[type="radio"]:checked + div > .radio-title {
             color: #c084fc;
         }
+        /* Custom style for time input icon */
+        input[type="time"]::-webkit-calendar-picker-indicator {
+            filter: invert(0.8);
+        }
     </style>
 </head>
 <body class="bg-gray-900 text-gray-300">
@@ -58,10 +62,14 @@
         <header class="text-center mb-8 p-6 rounded-2xl bg-gradient-to-tr from-black to-gray-800 text-white shadow-lg">
             <h1 class="text-5xl md:text-6xl font-black tracking-tight text-amber-400">SABOR AÇAÍTERIA</h1>
             <p class="text-lg md:text-xl mt-2 text-gray-300 opacity-90">Monte seu pedido online de forma fácil e rápida!</p>
-            <p class="text-md md:text-lg mt-3 text-gray-300 opacity-90 bg-white/10 rounded-full px-4 py-1 inline-block">
-                <i class="fas fa-clock mr-2"></i>Horário: 14:30 às 22:15
+            <p id="store-hours-display" class="text-md md:text-lg mt-3 text-gray-300 opacity-90 bg-white/10 rounded-full px-4 py-1 inline-flex items-center justify-center">
+                <i class="fas fa-clock mr-2"></i> <span>Carregando horário...</span>
+                <span id="store-status-indicator" class="ml-2 px-3 py-1 text-sm rounded-full"></span>
             </p>
         </header>
+
+        <!-- Store Status Banner -->
+        <div id="store-status-banner" class="hidden"></div>
 
         <main class="space-y-8">
             <!-- Products Section -->
@@ -86,12 +94,14 @@
             </div>
             <div class="text-gray-400 pt-2">
                 <p>Siga-nos no Instagram: 
-                    <a href="#" class="font-semibold text-purple-400 hover:underline">@sabor_acaiteria</a>
+                    <a href="https://www.instagram.com/sabor_acaiteria_delivery/profilecard/?igsh=NjF2ZWMwNHNiNzI0" target="_blank" class="font-semibold text-purple-400 hover:underline">@sabor_acaiteria_delivery</a>
                 </p>
-                <p class="mt-2 text-sm">
-                    <a href="#" onclick="openAdminPanel(event)" class="hover:underline">Painel do Administrador</a>
-                </p>
-                 <p id="user-id-display" class="text-xs text-gray-600 mt-4"></p>
+            </div>
+            <!-- Admin Panel Button -->
+            <div class="mt-6">
+                 <a href="#" onclick="openAdminPanel(event)" class="inline-block bg-amber-400 text-gray-900 font-bold py-3 px-6 rounded-lg hover:bg-amber-500 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                    <i class="fas fa-user-shield mr-2"></i>Painel do Administrador
+                </a>
             </div>
         </footer>
     </div>
@@ -156,14 +166,14 @@
                     <h4 class="text-xl font-bold text-gray-200">Informações do Pedido</h4>
                     <div id="delivery-options">
                         <div class="flex flex-col sm:flex-row gap-4">
-                            <label class="flex-1 flex items-center p-3 border-2 border-gray-600 rounded-lg cursor-pointer has-[:checked]:border-purple-500 has-[:checked]:bg-purple-900/50">
+                            <label id="delivery-option-delivery" class="flex-1 flex items-center p-3 border-2 border-gray-600 rounded-lg cursor-pointer has-[:checked]:border-purple-500 has-[:checked]:bg-purple-900/50">
                                 <input type="radio" name="delivery_option" value="delivery" class="hidden" checked>
                                 <div class="flex items-center">
                                     <span class="mr-3"><i class="fas fa-motorcycle text-xl text-purple-400"></i></span>
                                     <div><span class="font-semibold text-gray-300 block radio-title">Delivery (Entrega)</span><span class="text-sm text-gray-500">20-60 min</span></div>
                                 </div>
                             </label>
-                            <label class="flex-1 flex items-center p-3 border-2 border-gray-600 rounded-lg cursor-pointer has-[:checked]:border-purple-500 has-[:checked]:bg-purple-900/50">
+                            <label id="delivery-option-takeout" class="flex-1 flex items-center p-3 border-2 border-gray-600 rounded-lg cursor-pointer has-[:checked]:border-purple-500 has-[:checked]:bg-purple-900/50">
                                 <input type="radio" name="delivery_option" value="takeout" class="hidden">
                                 <div class="flex items-center">
                                     <span class="mr-3"><i class="fas fa-store text-xl text-purple-400"></i></span>
@@ -277,761 +287,972 @@
         </div>
     </div>
 
-<script type="module">
-// --- FIREBASE IMPORTS ---
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-// --- FIREBASE CONFIG & GLOBALS ---
-const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-const appId = typeof __app_id !== 'undefined' ? __app_id : 'sabor-acaiteria-default';
-
-let app, auth, db;
-let userId;
-let unsubscribeCart, unsubscribeMenu = {}; // To hold snapshot listeners
-
-// --- DEFAULT DATABASE VALUES ---
-const defaultProducts = [
-    { id: 1, name: 'Copo 300ml', price: 14.00, disabled: false },
-    { id: 2, name: 'Copo 400ml', price: 17.00, disabled: false },
-    { id: 3, name: 'Copo 500ml', price: 20.00, disabled: false },
-    { id: 4, name: 'Barca M', price: 55.00, disabled: true },
-];
-
-const defaultToppings = {
-    free: {
-        title: '🍓 Frutas e Cremes (Grátis, escolha até 3)',
-        limit: 3,
-        items: ['Sorvete', 'Banana', 'Morango', 'Manga', 'Kiwi', 'Uva', 'Abacaxi', 'Creme de Leite Ninho', 'Creme de Cupuaçu', 'Mousse de Maracujá', 'Creme de Avelã']
-    },
-    grains: {
-        title: '🌾 Grãos e Cereais (Grátis, escolha até 2)',
-        limit: 2,
-        items: ['Granola Tradicional', 'Aveia', 'Flocos', 'Tapioca', 'Paçoca', 'Leite em Pó', 'Amendoim', 'Coco Ralado']
-    },
-    caldas: {
-        title: '🍯 Caldas (Grátis, escolha 1)',
-        limit: 1,
-        items: ['Leite Condensado', 'Calda de Chocolate', 'Calda de Morango', 'Calda de Caramelo', 'Calda de Açaí', 'Calda de Kiwi']
-    },
-    paid_tier2: {
-        title: '🍫 Doces e Chocolates (+ R$ 3,00 cada)',
-        price: 3.00,
-        items: ['Gotas de Chocolate', 'Confetes', 'Bis Picado', 'Ouro Branco', 'Sonho de Valsa']
-    },
-    paid_tier3: {
-        title: '⭐ Mais alguma coisa? (+ R$ 4,00 cada)',
-        price: 4.00,
-        items: [
-            'Sorvete', 'Banana', 'Morango', 'Manga', 'Kiwi', 'Uva', 'Abacaxi',
-            'Creme de Leite Ninho', 'Creme de Cupuaçu', 'Mousse de Maracujá', 'Creme de Avelã'
-        ]
-    }
-};
-
-// --- APPLICATION STATE ---
-let products = [];
-let toppings = {};
-let cart = [];
-let currentItem = null;
-let whatsAppMessage = '';
-let customerInfo = {};
-
-// --- DOM ELEMENT SELECTORS ---
-const productList = document.getElementById('product-list');
-const itemModal = document.getElementById('item-modal');
-const cartModal = document.getElementById('cart-modal');
-const confirmationModal = document.getElementById('confirmation-modal');
-const adminModal = document.getElementById('admin-modal');
-const cartButton = document.getElementById('cart-button');
-const alertModal = document.getElementById('alert-modal');
-const customerNameInput = document.getElementById('customer-name');
-const customerAddressInput = document.getElementById('customer-address');
-const neighborhoodSelect = document.getElementById('neighborhood');
-const deliveryFields = document.getElementById('delivery-fields');
-const deliveryOptionRadios = document.querySelectorAll('input[name="delivery_option"]');
-
-// --- HELPER FUNCTIONS ---
-function formatCurrency(value) {
-    if (typeof value !== 'number') value = 0;
-    return `R$ ${value.toFixed(2).replace('.', ',')}`;
-}
-
-// --- FIRESTORE DATA FUNCTIONS ---
-
-/**
- * Loads the menu (products and toppings) from Firestore.
- * If the menu doesn't exist, it uploads the default values.
- * Sets up a real-time listener for menu changes.
- */
-async function loadMenuFromFirestore() {
-    const menuPath = `/artifacts/${appId}/public/menu`;
-    const productsRef = doc(db, menuPath, 'products');
-    const toppingsRef = doc(db, menuPath, 'toppings');
-
-    // Detach any existing listeners
-    if (unsubscribeMenu.products) unsubscribeMenu.products();
-    if (unsubscribeMenu.toppings) unsubscribeMenu.toppings();
-
-    try {
-        // Set up listener for Products
-        unsubscribeMenu.products = onSnapshot(productsRef, async (docSnap) => {
-            if (docSnap.exists()) {
-                products = docSnap.data().data || [];
-                console.log("Products loaded from Firestore.");
-            } else {
-                console.log("No products found in Firestore. Uploading default products.");
-                products = defaultProducts;
-                await setDoc(productsRef, { data: defaultProducts });
-            }
-            renderProducts();
-        }, (error) => {
-            console.error("Error listening to products:", error);
-            showAlert("Não foi possível carregar os produtos. Tente recarregar a página.", "Erro de Conexão", true);
-        });
-
-        // Set up listener for Toppings
-        unsubscribeMenu.toppings = onSnapshot(toppingsRef, async (docSnap) => {
-            if (docSnap.exists()) {
-                toppings = docSnap.data().data || {};
-                console.log("Toppings loaded from Firestore.");
-            } else {
-                console.log("No toppings found in Firestore. Uploading default toppings.");
-                toppings = defaultToppings;
-                await setDoc(toppingsRef, { data: defaultToppings });
-            }
-        }, (error) => {
-            console.error("Error listening to toppings:", error);
-            showAlert("Não foi possível carregar os complementos. Tente recarregar a página.", "Erro de Conexão", true);
-        });
-
-    } catch (error) {
-        console.error("Error setting up menu listeners:", error);
-        showAlert("Erro crítico ao carregar o cardápio.", "Erro", true);
-    }
-}
-
-
-/**
- * Saves the entire cart array to the user's private document in Firestore.
- */
-async function saveCartToFirestore() {
-    if (!userId) return;
-    const cartRef = doc(db, `/artifacts/${appId}/users/${userId}/cart`, 'current');
-    try {
-        await setDoc(cartRef, { items: cart });
-        console.log("Cart saved to Firestore.");
-    } catch (error) {
-        console.error("Error saving cart to Firestore:", error);
-        showAlert("Não foi possível salvar seu carrinho. Verifique sua conexão.", "Erro", true);
-    }
-}
-
-/**
- * Sets up a real-time listener for the user's cart.
- */
-function loadCartFromFirestore() {
-    if (!userId) return;
-    // Detach previous listener if it exists
-    if (unsubscribeCart) unsubscribeCart();
-
-    const cartRef = doc(db, `/artifacts/${appId}/users/${userId}/cart`, 'current');
-    unsubscribeCart = onSnapshot(cartRef, (docSnap) => {
-        if (docSnap.exists()) {
-            cart = docSnap.data().items || [];
-            console.log("Cart updated from Firestore.");
-        } else {
-            console.log("No cart found for user, starting fresh.");
-            cart = [];
-        }
-        renderCart();
-        updateCartIcon();
-    }, (error) => {
-        console.error("Error listening to cart:", error);
-        showAlert("Não foi possível carregar seu carrinho. Tente recarregar a página.", "Erro de Conexão", true);
-    });
-}
-
-/**
- * Saves the customer's information to their private profile document.
- */
-async function saveCustomerInfoToFirestore() {
-    if (!userId) return;
-    const info = {
-        name: customerNameInput.value,
-        address: customerAddressInput.value,
-        neighborhood: neighborhoodSelect.value,
-        deliveryOption: document.querySelector('input[name="delivery_option"]:checked').value
-    };
-    const profileRef = doc(db, `/artifacts/${appId}/users/${userId}/profile`, 'info');
-    try {
-        await setDoc(profileRef, info, { merge: true });
-        console.log("Customer info saved to Firestore.");
-    } catch (error) {
-        console.error("Error saving customer info:", error);
-        showAlert("Não foi possível salvar suas informações. Verifique sua conexão.", "Erro", true);
-    }
-}
-
-/**
- * Loads the customer's information from Firestore.
- */
-async function loadCustomerInfoFromFirestore() {
-    if (!userId) return;
-    const profileRef = doc(db, `/artifacts/${appId}/users/${userId}/profile`, 'info');
-    try {
-        const docSnap = await getDoc(profileRef);
-        if (docSnap.exists()) {
-            customerInfo = docSnap.data();
-            console.log("Customer info loaded from Firestore.");
-            customerNameInput.value = customerInfo.name || '';
-            customerAddressInput.value = customerInfo.address || '';
-            neighborhoodSelect.value = customerInfo.neighborhood || '';
-            if (customerInfo.deliveryOption) {
-                document.querySelector(`input[name="delivery_option"][value="${customerInfo.deliveryOption}"]`).checked = true;
-            }
-            toggleDeliveryFields();
-        } else {
-            console.log("No customer info found in Firestore.");
-        }
-    } catch (error) {
-        console.error("Error loading customer info:", error);
-    }
-}
-
-
-// --- CUSTOM ALERT FUNCTION ---
-window.showAlert = function(message, title = 'Atenção!', isError = false) {
-    document.getElementById('alert-message').textContent = message;
-    document.getElementById('alert-title').textContent = title;
-    const iconContainer = document.getElementById('alert-icon');
-    if (isError) {
-        iconContainer.innerHTML = '<i class="fas fa-exclamation-triangle text-red-500 text-5xl"></i>';
-    } else {
-        iconContainer.innerHTML = '<i class="fas fa-check-circle text-green-500 text-5xl"></i>';
-    }
-    alertModal.classList.remove('hidden');
-    setTimeout(() => {
-        alertModal.classList.remove('opacity-0');
-        alertModal.querySelector('div > div').classList.remove('scale-95');
-    }, 10);
-}
-window.closeAlertModal = function() {
-    alertModal.classList.add('opacity-0');
-    alertModal.querySelector('div > div').classList.add('scale-95');
-    setTimeout(() => { alertModal.classList.add('hidden'); }, 300);
-}
-
-// --- RENDER FUNCTIONS ---
-function renderProducts() {
-    productList.innerHTML = '';
-    if (!products || products.length === 0) {
-        productList.innerHTML = '<p class="text-gray-500 col-span-full text-center">Nenhum produto disponível no momento.</p>';
-        return;
-    }
-    products.forEach(product => {
-        if (product.disabled) return; // Don't render disabled products for customers
-
-        const productCard = `
-            <div class="bg-gray-800 border border-gray-700 rounded-xl p-4 text-center transition-all hover:shadow-lg hover:border-purple-400 cursor-pointer flex flex-col justify-between" onclick="openItemModal(${product.id})">
-                <div>
-                    <h3 class="font-bold text-xl text-gray-100">${product.name}</h3>
-                    <p class="text-2xl font-semibold text-purple-400 mt-2">${formatCurrency(product.price)}</p>
-                </div>
-                <button class="mt-4 bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-purple-500 transition-all w-full">Montar</button>
+    <!-- Password Prompt Modal -->
+    <div id="password-modal" class="fixed inset-0 bg-black bg-opacity-70 z-[80] hidden items-center justify-center p-4">
+        <div class="bg-gray-800 text-gray-200 rounded-2xl shadow-2xl w-full max-w-sm text-center p-6">
+            <h3 class="text-xl font-bold text-amber-400 mb-4">Acesso Restrito</h3>
+            <p class="text-gray-400 mb-4">Por favor, insira o e-mail e a senha de administrador.</p>
+            <input type="email" id="admin-email-input" class="block w-full bg-gray-700 border-2 border-gray-600 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 p-3 text-base mb-3" placeholder="E-mail">
+            <input type="password" id="admin-password-input" class="block w-full bg-gray-700 border-2 border-gray-600 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 p-3 text-base" placeholder="Senha">
+            <div class="mt-6 flex gap-4">
+                <button onclick="closePasswordModal()" class="w-full bg-gray-600 text-gray-100 font-bold py-2 px-6 rounded-lg hover:bg-gray-500 transition-all">Cancelar</button>
+                <button onclick="checkAdminPassword()" class="w-full bg-purple-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-purple-700 transition-all">Entrar</button>
             </div>
-        `;
-        productList.innerHTML += productCard;
-    });
-}
+        </div>
+    </div>
 
-function renderCart() {
-    const cartContainer = document.getElementById('cart-items-container');
-    const cartTotalEl = document.getElementById('cart-total');
-    const cartCountEl = document.getElementById('cart-count');
-    const checkoutForm = document.getElementById('checkout-form');
-    const summaryDetails = document.getElementById('cart-summary-details');
-
-    if (cart.length === 0) {
-        cartContainer.innerHTML = '<p class="text-gray-500 text-center">Seu carrinho está vazio.</p>';
-        checkoutForm.classList.add('hidden');
-        summaryDetails.classList.add('hidden');
-    } else {
-        checkoutForm.classList.remove('hidden');
-        summaryDetails.classList.remove('hidden');
-        cartContainer.innerHTML = cart.map((item, index) => `
-            <div class="flex items-start justify-between p-4 border-b border-gray-700">
-                <div>
-                    <p class="font-bold text-lg text-gray-100">${item.name} (x${item.quantity})</p>
-                    <div class="text-sm text-gray-400 pl-2 mt-1">
-                        ${item.toppings && item.toppings.length > 0 ? item.toppings.map(t => `<span>- ${t.name} ${t.price > 0 ? `(+ ${formatCurrency(t.price)})` : ''}</span>`).join('<br>') : '<span>- Açaí puro</span>'}
-                    </div>
-                </div>
-                <div class="text-right">
-                    <p class="font-bold text-lg text-purple-400">${formatCurrency(item.price * item.quantity)}</p>
-                    <div class="flex items-center gap-2 mt-2">
-                        <button onclick="updateQuantity(${index}, -1)" class="bg-gray-700 w-7 h-7 rounded-full font-bold text-lg flex items-center justify-center">-</button>
-                        <span class="font-bold w-5 text-center">${item.quantity}</span>
-                        <button onclick="updateQuantity(${index}, 1)" class="bg-gray-700 w-7 h-7 rounded-full font-bold text-lg flex items-center justify-center">+</button>
-                        <button onclick="removeFromCart(${index})" class="text-red-500 hover:text-red-700 ml-2"><i class="fas fa-trash"></i></button>
-                    </div>
-                </div>
+    <!-- Generic Confirmation Modal -->
+    <div id="confirm-action-modal" class="fixed inset-0 bg-black bg-opacity-70 z-[80] hidden items-center justify-center p-4">
+        <div class="bg-gray-800 text-gray-200 rounded-2xl shadow-2xl w-full max-w-sm text-center p-6">
+            <div id="confirm-action-icon" class="mx-auto mb-4"><i class="fas fa-exclamation-triangle text-yellow-500 text-5xl"></i></div>
+            <h3 id="confirm-action-title" class="text-xl font-bold text-gray-100 mb-2">Confirmar Ação</h3>
+            <p id="confirm-action-message" class="text-gray-400 mb-6">Você tem certeza?</p>
+            <div class="mt-6 flex gap-4">
+                <button id="confirm-action-cancel-btn" class="w-full bg-gray-600 text-gray-100 font-bold py-2 px-6 rounded-lg hover:bg-gray-500 transition-all">Cancelar</button>
+                <button id="confirm-action-confirm-btn" class="w-full bg-red-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-700 transition-all">Confirmar</button>
             </div>
-        `).join('');
-    }
+        </div>
+    </div>
 
-    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const deliveryOption = document.querySelector('input[name="delivery_option"]:checked').value;
+    <!-- Firebase Scripts -->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+        // TODO: Add SDKs for Firebase products that you want to use
+        // https://firebase.google.com/docs/web/setup#available-libraries
+
+        // Your web app's Firebase configuration
+        // =================================================================================
+        // COLE A CONFIGURAÇÃO DO SEU PROJETO FIREBASE AQUI
+        // =================================================================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyDSIIJm5q3RbLEZsNzeFo0T6Y_mtdLKd7U",
+            authDomain: "sabor-acaiteria-oline.firebaseapp.com",
+            projectId: "sabor-acaiteria-oline",
+            storageBucket: "sabor-acaiteria-oline.appspot.com",
+            messagingSenderId: "846562505902",
+            appId: "1:846562505902:web:2fb8bc72e72b457b95e93f",
+            measurementId: "G-DQ2M7J620Z"
+        };
+        // =================================================================================
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // Pass Firebase services to the global scope so your existing script can use them
+        window.db = db;
+        window.auth = auth;
+        window.doc = doc;
+        window.getDoc = getDoc;
+        window.setDoc = setDoc;
+        window.onSnapshot = onSnapshot;
+        window.signInWithEmailAndPassword = signInWithEmailAndPassword;
+        window.onAuthStateChanged = onAuthStateChanged;
+
+        // Trigger the initialization of the app's main logic
+        window.initializeApp();
+    </script>
     
-    let deliveryFee = 0;
-    if (deliveryOption === 'delivery' && subtotal > 0) {
-        const selectedOption = neighborhoodSelect.options[neighborhoodSelect.selectedIndex];
-        deliveryFee = parseFloat(selectedOption.dataset.fee || 0);
-    }
-    
-    const finalTotal = subtotal + deliveryFee;
-
-    document.getElementById('cart-subtotal').textContent = formatCurrency(subtotal);
-    document.getElementById('cart-delivery-fee').textContent = formatCurrency(deliveryFee);
-    cartTotalEl.textContent = formatCurrency(finalTotal);
-    cartCountEl.textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
-}
-
-// --- DELIVERY OPTION LOGIC ---
-window.toggleDeliveryFields = function() {
-    const deliveryOption = document.querySelector('input[name="delivery_option"]:checked').value;
-    if (deliveryOption === 'takeout') {
-        deliveryFields.classList.add('hidden');
-    } else {
-        deliveryFields.classList.remove('hidden');
-    }
-    renderCart();
-}
-
-// --- MODAL LOGIC ---
-window.openItemModal = function(productId) {
-    const product = products.find(p => p.id === productId);
-    if (!product) return;
-    currentItem = {
-        id: productId, name: product.name, basePrice: product.price, price: product.price, quantity: 1, toppings: [],
+    <script>
+    // --- APPLICATION STATE ---
+    let cart = [];
+    let currentItem = null;
+    let whatsAppMessage = '';
+    let isStoreOpen = false;
+    let adminSettings = {
+        storeStatus: 'auto', // 'auto', 'open', 'closed'
+        deliveryMode: 'both',  // 'both', 'delivery', 'takeout'
+        openingTime: '14:30',
+        closingTime: '22:15',
+        openDays: [0, 1, 2, 3, 4, 5, 6] // Sun, Mon, Tue, Wed, Thu, Fri, Sat
     };
+    let products = [];
+    let toppings = {};
+    let isAdmin = false;
 
-    document.getElementById('modal-title').textContent = `Monte seu ${product.name}`;
-    const modalBody = document.getElementById('modal-body');
-    modalBody.innerHTML = '';
+    const CART_STORAGE_KEY = 'saborAcaiteriaCart';
+    const CUSTOMER_INFO_STORAGE_KEY = 'saborAcaiteriaCustomerInfo';
 
-    const warningNote = `<div class="bg-yellow-900/50 border-l-4 border-yellow-500 text-yellow-300 p-4 rounded-md" role="alert"><div class="flex"><div class="py-1"><i class="fas fa-info-circle mr-3"></i></div><div><p class="font-bold">Atenção!</p><p class="text-sm">Escolha seus adicionais com carinho. Nossos copos têm espaço limitado e talvez não seja possível incluir todos os itens selecionados.</p></div></div></div>`;
-    modalBody.innerHTML += warningNote;
+    // --- DOM ELEMENT SELECTORS ---
+    const productList = document.getElementById('product-list');
+    const itemModal = document.getElementById('item-modal');
+    const cartModal = document.getElementById('cart-modal');
+    const confirmationModal = document.getElementById('confirmation-modal');
+    const adminModal = document.getElementById('admin-modal');
+    const cartButton = document.getElementById('cart-button');
+    const alertModal = document.getElementById('alert-modal');
+    const customerNameInput = document.getElementById('customer-name');
+    const customerAddressInput = document.getElementById('customer-address');
+    const neighborhoodSelect = document.getElementById('neighborhood');
+    const deliveryFields = document.getElementById('delivery-fields');
+    const deliveryOptionRadios = document.querySelectorAll('input[name="delivery_option"]');
+    const passwordModal = document.getElementById('password-modal');
+    const adminEmailInput = document.getElementById('admin-email-input');
+    const adminPasswordInput = document.getElementById('admin-password-input');
+    const confirmActionModal = document.getElementById('confirm-action-modal');
 
-    Object.entries(toppings).forEach(([key, category]) => {
-        const section = document.createElement('div');
-        let itemsHTML = category.items.map(item => `
-            <label class="flex items-center space-x-3 p-2 rounded-md hover:bg-gray-700 cursor-pointer">
-                <input type="checkbox" class="h-5 w-5 rounded border-gray-500 bg-gray-600 text-purple-600 focus:ring-purple-500" name="${key}" value="${item}" data-price="${category.price || 0}">
-                <span class="text-gray-300">${item}</span>
-            </label>
-        `).join('');
-        section.innerHTML = `<h4 class="text-lg font-bold text-gray-200 mb-2 pb-1 border-b border-gray-600">${category.title}</h4><div class="grid grid-cols-2 sm:grid-cols-3 gap-2">${itemsHTML}</div>`;
-        modalBody.appendChild(section);
-    });
-    
-    modalBody.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-        checkbox.addEventListener('change', updateModalItemTotal);
-    });
+    // --- HELPER FUNCTIONS ---
+    function formatCurrency(value) {
+        return `R$ ${value.toFixed(2).replace('.', ',')}`;
+    }
 
-    updateModalItemTotal();
-    itemModal.classList.remove('hidden');
-    itemModal.classList.add('flex');
-}
-
-window.closeItemModal = function() {
-    itemModal.classList.add('hidden');
-    itemModal.classList.remove('flex');
-    currentItem = null;
-}
-
-function updateModalItemTotal() {
-    let totalFromToppings = 0;
-    const currentToppingsList = [];
-
-    Object.entries(toppings).forEach(([key, category]) => {
-        const checkboxes = document.querySelectorAll(`#modal-body input[name="${key}"]`);
-        const checkedCheckboxes = document.querySelectorAll(`#modal-body input[name="${key}"]:checked`);
-
-        if (category.limit) {
-            if (checkedCheckboxes.length >= category.limit) {
-                checkboxes.forEach(cb => { if (!cb.checked) cb.disabled = true; });
-            } else {
-                checkboxes.forEach(cb => { cb.disabled = false; });
+    // --- LOCAL STORAGE FUNCTIONS (FOR CART AND CUSTOMER INFO ONLY) ---
+    function saveCart() { localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart)); }
+    function loadCart() {
+        const savedCart = localStorage.getItem(CART_STORAGE_KEY);
+        if (savedCart) cart = JSON.parse(savedCart);
+    }
+    function saveCustomerInfo() {
+        const info = {
+            name: customerNameInput.value,
+            address: customerAddressInput.value,
+            neighborhood: neighborhoodSelect.value,
+            deliveryOption: document.querySelector('input[name="delivery_option"]:checked')?.value
+        };
+        localStorage.setItem(CUSTOMER_INFO_STORAGE_KEY, JSON.stringify(info));
+    }
+    function loadCustomerInfo() {
+        const savedInfo = localStorage.getItem(CUSTOMER_INFO_STORAGE_KEY);
+        if (savedInfo) {
+            const info = JSON.parse(savedInfo);
+            customerNameInput.value = info.name || '';
+            customerAddressInput.value = info.address || '';
+            neighborhoodSelect.value = info.neighborhood || '';
+            if (info.deliveryOption) {
+                const radio = document.querySelector(`input[name="delivery_option"][value="${info.deliveryOption}"]`);
+                if (radio) radio.checked = true;
             }
         }
-        
-        checkedCheckboxes.forEach(checkbox => {
-            const price = parseFloat(checkbox.dataset.price);
-            if (price > 0) totalFromToppings += price;
-            currentToppingsList.push({ name: checkbox.value, price: price });
+    }
+
+    // --- FIREBASE FUNCTIONS ---
+    async function loadDataFromFirebase() {
+        const menuRef = doc(db, "menu", "main");
+        const settingsRef = doc(db, "settings", "store");
+
+        // Use onSnapshot for real-time updates
+        onSnapshot(menuRef, (docSnap) => {
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                products = data.products || [];
+                toppings = data.toppings || {};
+                renderProducts();
+                checkStoreStatus();
+            } else {
+                console.log("No menu document! Using local defaults.");
+                // Optionally, create a default document if it doesn't exist
+            }
         });
-    });
-    
-    currentItem.price = currentItem.basePrice + totalFromToppings;
-    currentItem.toppings = currentToppingsList.sort((a, b) => a.price - b.price);
-    document.getElementById('modal-item-total').textContent = formatCurrency(currentItem.price);
-}
 
-window.toggleCartModal = function() {
-    renderCart();
-    cartModal.classList.toggle('hidden');
-    cartModal.classList.toggle('flex');
-}
-
-window.closeConfirmationModal = function() {
-    confirmationModal.classList.add('hidden');
-    confirmationModal.classList.remove('flex');
-    setTimeout(() => {
-        document.getElementById('confirmation-icon').innerHTML = '<i class="fas fa-check-circle text-green-500 text-6xl mb-4"></i>';
-        document.getElementById('confirmation-title').textContent = 'Pedido Recebido!';
-        document.getElementById('confirmation-message').textContent = 'Seu resumo está pronto. Clique no botão para enviar via WhatsApp e concluir seu pedido!';
-        document.getElementById('initial-confirm-buttons').classList.remove('hidden');
-        document.getElementById('initial-confirm-buttons').classList.add('flex');
-        document.getElementById('post-send-buttons').classList.add('hidden');
-        document.getElementById('post-send-buttons').classList.remove('flex');
-    }, 300);
-}
-
-// --- CART LOGIC ---
-document.getElementById('add-to-cart-btn').addEventListener('click', () => {
-    const existingItemIndex = cart.findIndex(item => {
-        if (item.id !== currentItem.id || item.toppings.length !== currentItem.toppings.length) return false;
-        const currentToppingsSet = new Set(currentItem.toppings.map(t => t.name));
-        const existingToppingsSet = new Set(item.toppings.map(t => t.name));
-        if (currentToppingsSet.size !== existingToppingsSet.size) return false;
-        return [...currentToppingsSet].every(t => existingToppingsSet.has(t));
-    });
-
-    if (existingItemIndex > -1) {
-        cart[existingItemIndex].quantity++;
-    } else {
-        cart.push({ ...currentItem });
+        onSnapshot(settingsRef, (docSnap) => {
+            if (docSnap.exists()) {
+                adminSettings = Object.assign({}, adminSettings, docSnap.data());
+                checkStoreStatus();
+                renderDeliveryOptions();
+            } else {
+                console.log("No settings document! Using local defaults.");
+            }
+        });
     }
-    
-    saveCartToFirestore();
-    closeItemModal();
-});
 
-window.updateQuantity = function(index, change) {
-    if (cart[index].quantity + change > 0) {
-        cart[index].quantity += change;
-    } else {
-        cart.splice(index, 1);
-    }
-    saveCartToFirestore();
-}
-
-window.removeFromCart = function(index) {
-    cart.splice(index, 1);
-    saveCartToFirestore();
-}
-
-function updateCartIcon() {
-    const cartCountEl = document.getElementById('cart-count');
-    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-    cartCountEl.textContent = totalItems;
-    if (totalItems > 0) {
-        cartButton.classList.remove('hidden');
-    } else {
-         cartButton.classList.add('hidden');
-         if (cartModal.classList.contains('flex')) {
-             toggleCartModal();
-         }
-    }
-}
-
-// --- ORDER FINALIZATION LOGIC ---
-window.finalizeOrder = function() {
-    if (cart.length === 0) {
-        showAlert('Seu carrinho está vazio!', 'Carrinho Vazio', true);
-        return;
-    }
-    const name = customerNameInput.value.trim();
-    const address = customerAddressInput.value.trim();
-    const neighborhood = neighborhoodSelect.value;
-    const payment = document.getElementById('payment-method').value;
-    const obs = document.getElementById('observations').value.trim();
-    const deliveryOption = document.querySelector('input[name="delivery_option"]:checked').value;
-
-    if (!name) {
-        showAlert('Por favor, preencha seu Nome para continuar.', 'Dados Incompletos', true);
-        return;
-    }
-    
-    let deliveryFee = 0;
-    let summary = `*NOVO PEDIDO - SABOR AÇAÍTERIA*\n\n*Cliente:* ${name}\n`;
-
-    if (deliveryOption === 'delivery') {
-        if (!address || !neighborhood) {
-            showAlert('Por favor, selecione o Bairro e preencha o Endereço para entrega.', 'Dados Incompletos', true);
+    async function saveAdminChanges() {
+        if (!isAdmin) {
+            showAlert("Você não tem permissão para salvar.", "Acesso Negado", true);
             return;
         }
-        summary += `*Opção:* ENTREGA\n*Tempo Estimado:* 20-60 min\n*Endereço:* ${address}, ${neighborhood}\n\n`;
-        const selectedOption = neighborhoodSelect.options[neighborhoodSelect.selectedIndex];
-        deliveryFee = parseFloat(selectedOption.dataset.fee || 0);
-    } else {
-        summary += `*Opção:* RETIRAR NA LOJA\n*Tempo Estimado:* 20-30 min\n\n`;
-    }
 
-    summary += `*ITENS DO PEDIDO:*\n------------------------\n`;
-    cart.forEach(item => {
-        summary += `*${item.quantity}x ${item.name}*\n`;
-        if (item.toppings.length > 0) {
-            item.toppings.forEach(t => { summary += `  - ${t.name}\n`; });
-        } else {
-            summary += `  - Açaí puro\n`;
-        }
-        summary += `Subtotal: ${formatCurrency(item.price * item.quantity)}\n------------------------\n`;
-    });
-
-    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const finalTotal = subtotal + deliveryFee;
-    summary += `\n*Subtotal dos Itens: ${formatCurrency(subtotal)}*\n`;
-    if (deliveryOption === 'delivery') summary += `*Taxa de Entrega: ${formatCurrency(deliveryFee)}*\n`;
-    summary += `*TOTAL DO PEDIDO: ${formatCurrency(finalTotal)}*\n*Forma de Pagamento:* ${payment}\n`;
-    if (obs) summary += `*Observações:* ${obs}\n`;
-
-    whatsAppMessage = encodeURIComponent(summary);
-    document.getElementById('order-summary').innerHTML = summary.replace(/\n/g, '<br>').replace(/\*(.*?)\*/g, '<strong>$1</strong>');
-    toggleCartModal(); 
-    confirmationModal.classList.remove('hidden');
-    confirmationModal.classList.add('flex');
-}
-
-window.sendOrderViaWhatsApp = function() {
-    const yourNumber = '5594991623576'; 
-    const url = `https://wa.me/${yourNumber}?text=${whatsAppMessage}`;
-    window.open(url, '_blank');
-    
-    document.getElementById('confirmation-icon').innerHTML = '<i class="fab fa-whatsapp-square text-green-400 text-6xl mb-4"></i>';
-    document.getElementById('confirmation-title').textContent = 'Quase lá!';
-    document.getElementById('confirmation-message').textContent = 'A janela do WhatsApp foi aberta. Após enviar sua mensagem, clique no botão abaixo para confirmar e limpar seu carrinho.';
-    document.getElementById('initial-confirm-buttons').classList.add('hidden');
-    document.getElementById('post-send-buttons').classList.remove('hidden');
-    document.getElementById('post-send-buttons').classList.add('flex');
-}
-
-window.confirmOrderSent = async function() {
-    cart = [];
-    await saveCartToFirestore();
-    closeConfirmationModal();
-    showAlert('Ótimo! Seu carrinho foi limpo. Aguarde a confirmação da loja no WhatsApp.', 'Pedido Enviado');
-}
-
-// --- ADMIN PANEL LOGIC ---
-window.openAdminPanel = function(event) {
-    event.preventDefault();
-    const password = prompt("Por favor, insira a senha de administrador:");
-    if (password === "admin123") { // SENHA PADRÃO - Altere se desejar
-        renderAdminPanel();
-        adminModal.classList.remove('hidden');
-        adminModal.classList.add('flex');
-    } else if (password) {
-        alert("Senha incorreta!");
-    }
-}
-
-window.closeAdminModal = function() {
-    adminModal.classList.add('hidden');
-    adminModal.classList.remove('flex');
-}
-
-function renderAdminPanel() {
-    const adminBody = document.getElementById('admin-body');
-    adminBody.innerHTML = ''; // Clear previous content
-
-    // Section for Products (Tamanhos)
-    let productsHTML = `<div class="p-4 bg-gray-900/50 rounded-lg"><h4 class="text-xl font-bold text-purple-400 mb-4">Tamanhos (Produtos)</h4><div id="admin-products-list" class="space-y-3">`;
-    products.forEach((product, index) => {
-        productsHTML += `
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-3 items-center p-2 bg-gray-700 rounded-md admin-item" data-type="product" data-index="${index}">
-                <input type="text" value="${product.name}" class="admin-name col-span-2 bg-gray-600 p-2 rounded-md border border-gray-500" placeholder="Nome do Produto">
-                <input type="number" value="${product.price.toFixed(2)}" class="admin-price bg-gray-600 p-2 rounded-md border border-gray-500" placeholder="Preço">
-                <div class="flex items-center justify-between gap-2">
-                    <label class="flex items-center gap-2 text-sm cursor-pointer"><input type="checkbox" class="admin-disabled h-5 w-5" ${product.disabled ? 'checked' : ''}> Bloquear</label>
-                    <button onclick="removeAdminItem(this)" class="text-red-500 hover:text-red-400"><i class="fas fa-trash-alt"></i></button>
-                </div>
-            </div>`;
-    });
-    productsHTML += `</div><button onclick="addAdminItem('product')" class="mt-4 bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-500 text-sm"><i class="fas fa-plus mr-2"></i>Adicionar Tamanho</button></div>`;
-    adminBody.innerHTML += productsHTML;
-
-    // Section for Toppings
-    let toppingsHTML = `<div class="p-4 bg-gray-900/50 rounded-lg mt-6"><h4 class="text-xl font-bold text-purple-400 mb-4">Complementos</h4>`;
-    Object.entries(toppings).forEach(([key, category]) => {
-        toppingsHTML += `<div class="mt-4"><h5 class="font-semibold text-gray-300 mb-2">${category.title}</h5><div id="admin-toppings-${key}" class="space-y-2">`;
-        category.items.forEach((item, index) => {
-            toppingsHTML += `
-                <div class="flex items-center gap-3 p-2 bg-gray-700 rounded-md admin-item" data-type="topping" data-category="${key}" data-index="${index}">
-                    <input type="text" value="${item}" class="admin-name flex-grow bg-gray-600 p-2 rounded-md border border-gray-500" placeholder="Nome do Complemento">
-                    <button onclick="removeAdminItem(this)" class="text-red-500 hover:text-red-400"><i class="fas fa-trash-alt"></i></button>
-                </div>`;
-        });
-        toppingsHTML += `</div><button onclick="addAdminItem('topping', '${key}')" class="mt-3 bg-blue-600 text-white font-semibold py-1 px-3 rounded-lg hover:bg-blue-500 text-xs"><i class="fas fa-plus mr-1"></i>Adicionar Complemento</button></div>`;
-    });
-    toppingsHTML += `</div>`;
-    adminBody.innerHTML += toppingsHTML;
-}
-
-window.addAdminItem = function(type, categoryKey = '') {
-    const newItemHTML = (type === 'product')
-        ? `<div class="grid grid-cols-1 md:grid-cols-4 gap-3 items-center p-2 bg-gray-700 rounded-md admin-item" data-type="product">
-               <input type="text" value="Novo Produto" class="admin-name col-span-2 bg-gray-600 p-2 rounded-md border border-gray-500">
-               <input type="number" value="0.00" class="admin-price bg-gray-600 p-2 rounded-md border border-gray-500">
-               <div class="flex items-center justify-between gap-2">
-                   <label class="flex items-center gap-2 text-sm cursor-pointer"><input type="checkbox" class="admin-disabled h-5 w-5"> Bloquear</label>
-                   <button onclick="removeAdminItem(this)" class="text-red-500 hover:text-red-400"><i class="fas fa-trash-alt"></i></button>
-               </div>
-           </div>`
-        : `<div class="flex items-center gap-3 p-2 bg-gray-700 rounded-md admin-item" data-type="topping" data-category="${categoryKey}">
-               <input type="text" value="Novo Complemento" class="admin-name flex-grow bg-gray-600 p-2 rounded-md border border-gray-500">
-               <button onclick="removeAdminItem(this)" class="text-red-500 hover:text-red-400"><i class="fas fa-trash-alt"></i></button>
-           </div>`;
-    
-    const containerId = (type === 'product') ? 'admin-products-list' : `admin-toppings-${categoryKey}`;
-    document.getElementById(containerId).insertAdjacentHTML('beforeend', newItemHTML);
-}
-
-window.removeAdminItem = function(button) {
-    button.closest('.admin-item').remove();
-}
-
-window.saveAdminChanges = async function() {
-    const menuPath = `/artifacts/${appId}/public/menu`;
-    const productsRef = doc(db, menuPath, 'products');
-    const toppingsRef = doc(db, menuPath, 'toppings');
-
-    // Save products
-    const newProducts = [];
-    document.querySelectorAll('#admin-products-list .admin-item').forEach((item, index) => {
-        const name = item.querySelector('.admin-name').value;
-        const price = parseFloat(item.querySelector('.admin-price').value);
-        const disabled = item.querySelector('.admin-disabled').checked;
-        if (name && !isNaN(price)) {
-            newProducts.push({ id: Date.now() + index, name, price, disabled });
-        }
-    });
-    
-    // Save toppings
-    const newToppings = JSON.parse(JSON.stringify(defaultToppings)); // Start with default structure
-    Object.keys(newToppings).forEach(key => {
-        const categoryItems = [];
-        document.querySelectorAll(`#admin-toppings-${key} .admin-item`).forEach(item => {
+        // Save settings
+        const newAdminSettings = {
+            storeStatus: document.querySelector('input[name="admin_store_status"]:checked').value,
+            deliveryMode: document.querySelector('input[name="admin_delivery_mode"]:checked').value,
+            openingTime: document.getElementById('admin-opening-time').value,
+            closingTime: document.getElementById('admin-closing-time').value,
+            openDays: Array.from(document.querySelectorAll('input[name="admin_open_day"]:checked')).map(cb => parseInt(cb.value))
+        };
+        
+        // Save menu
+        const newProducts = [];
+        document.querySelectorAll('#admin-products-list .admin-item').forEach((item, index) => {
             const name = item.querySelector('.admin-name').value;
-            if (name) categoryItems.push(name);
+            const price = parseFloat(item.querySelector('.admin-price').value);
+            const disabled = item.querySelector('.admin-disabled').checked;
+            if (name && !isNaN(price)) {
+                newProducts.push({ id: Date.now() + index, name, price, disabled });
+            }
         });
-        newToppings[key].items = categoryItems;
-    });
+        
+        const newToppings = {};
+        Object.keys(toppings).forEach(key => {
+            const categoryItems = [];
+            document.querySelectorAll(`#admin-toppings-${key} .admin-item`).forEach(item => {
+                const name = item.querySelector('.admin-name').value;
+                const disabled = item.querySelector('.admin-disabled').checked;
+                if (name) {
+                    categoryItems.push({ name, disabled });
+                }
+            });
+            newToppings[key] = { ...toppings[key], items: categoryItems };
+        });
 
-    try {
-        await setDoc(productsRef, { data: newProducts });
-        await setDoc(toppingsRef, { data: newToppings });
-        showAlert('Cardápio atualizado com sucesso!', 'Salvo!', false);
-        closeAdminModal();
-    } catch (error) {
-        console.error("Error saving admin changes:", error);
-        showAlert("Falha ao salvar as alterações. Verifique sua conexão.", "Erro", true);
-    }
-}
-
-window.resetToDefaults = async function() {
-    if (confirm("Tem certeza que deseja restaurar o cardápio para os valores padrão? Todas as suas alterações serão perdidas.")) {
-        const menuPath = `/artifacts/${appId}/public/menu`;
-        const productsRef = doc(db, menuPath, 'products');
-        const toppingsRef = doc(db, menuPath, 'toppings');
         try {
-            await setDoc(productsRef, { data: defaultProducts });
-            await setDoc(toppingsRef, { data: defaultToppings });
-            showAlert('Cardápio restaurado para o padrão.', 'Restaurado');
+            await setDoc(doc(db, "settings", "store"), newAdminSettings);
+            await setDoc(doc(db, "menu", "main"), { products: newProducts, toppings: newToppings });
+            showAlert('Configurações salvas com sucesso!', 'Salvo!', false);
             closeAdminModal();
         } catch (error) {
-            console.error("Error resetting to defaults:", error);
-            showAlert("Falha ao restaurar. Tente novamente.", "Erro", true);
+            console.error("Error writing document: ", error);
+            showAlert("Erro ao salvar as configurações. Verifique o console.", "Erro", true);
         }
     }
-}
 
-// --- INITIALIZATION ---
-function startApp() {
-    // This function is called after Firebase auth is ready
-    loadMenuFromFirestore();
-    loadCartFromFirestore();
-    loadCustomerInfoFromFirestore();
-    
-    renderProducts();
-    renderCart();
-    updateCartIcon();
-    toggleDeliveryFields();
-
-    // Event listeners that depend on user info
-    customerNameInput.addEventListener('input', saveCustomerInfoToFirestore);
-    customerAddressInput.addEventListener('input', saveCustomerInfoToFirestore);
-    neighborhoodSelect.addEventListener('change', () => {
-        saveCustomerInfoToFirestore();
-        renderCart();
-    });
-    deliveryOptionRadios.forEach(radio => {
-        radio.addEventListener('change', () => {
-            toggleDeliveryFields();
-            saveCustomerInfoToFirestore();
-        });
-    });
-}
-
-async function initializeFirebase() {
-    if (!firebaseConfig || Object.keys(firebaseConfig).length === 0) {
-        console.error("Firebase config is missing!");
-        document.body.innerHTML = '<div class="text-center text-red-500 p-8">Erro de configuração. A aplicação não pode ser carregada.</div>';
-        return;
+    // --- CUSTOM ALERT FUNCTION ---
+    function showAlert(message, title = 'Atenção!', isError = false) {
+        document.getElementById('alert-message').textContent = message;
+        document.getElementById('alert-title').textContent = title;
+        const iconContainer = document.getElementById('alert-icon');
+        if (isError) {
+            iconContainer.innerHTML = '<i class="fas fa-exclamation-triangle text-red-500 text-5xl"></i>';
+        } else {
+            iconContainer.innerHTML = '<i class="fas fa-check-circle text-green-500 text-5xl"></i>';
+        }
+        alertModal.classList.remove('hidden');
+        setTimeout(() => {
+            alertModal.classList.remove('opacity-0');
+            alertModal.querySelector('div > div').classList.remove('scale-95');
+        }, 10);
+    }
+    function closeAlertModal() {
+        alertModal.classList.add('opacity-0');
+        alertModal.querySelector('div > div').classList.add('scale-95');
+        setTimeout(() => { alertModal.classList.add('hidden'); }, 300);
     }
 
-    try {
-        app = initializeApp(firebaseConfig);
-        db = getFirestore(app);
-        auth = getAuth(app);
-        
-        await setPersistence(auth, browserLocalPersistence);
+    // --- STORE STATUS LOGIC ---
+    function renderStoreHoursDisplay() {
+        const display = document.getElementById('store-hours-display');
+        const dayNames = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+        let daysString = "Fechado todos os dias";
 
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                console.log("User is signed in:", user.uid);
-                userId = user.uid;
+        if (adminSettings.openDays.length > 0) {
+            if (adminSettings.openDays.length === 7) {
+                daysString = "Todos os dias";
             } else {
-                console.log("User is not signed in. Attempting to sign in.");
-                try {
-                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                        await signInWithCustomToken(auth, __initial_auth_token);
-                    } else {
-                        await signInAnonymously(auth);
-                    }
-                } catch (error) {
-                    console.error("Anonymous sign-in failed:", error);
-                    showAlert("Não foi possível iniciar uma sessão. O app pode não funcionar corretamente.", "Erro de Autenticação", true);
+                daysString = adminSettings.openDays.sort().map(dayIndex => dayNames[dayIndex]).join(', ');
+            }
+        }
+        
+        display.querySelector('span').textContent = `${adminSettings.openingTime} às ${adminSettings.closingTime} (${daysString})`;
+    }
+
+    function checkStoreStatus() {
+        const indicator = document.getElementById('store-status-indicator');
+        const banner = document.getElementById('store-status-banner');
+        const finalizeBtn = document.querySelector('button[onclick="finalizeOrder()"]');
+
+        if (adminSettings.storeStatus === 'open') {
+            isStoreOpen = true;
+        } else if (adminSettings.storeStatus === 'closed') {
+            isStoreOpen = false;
+        } else { // 'auto'
+            const now = new Date();
+            const currentDay = now.getDay(); // Sunday = 0, Monday = 1, etc.
+            const isTodayOpenDay = adminSettings.openDays.includes(currentDay);
+
+            if (!isTodayOpenDay) {
+                isStoreOpen = false;
+            } else {
+                const openTime = parseInt(adminSettings.openingTime.replace(':', ''));
+                const closeTime = parseInt(adminSettings.closingTime.replace(':', ''));
+                const currentTime = now.getHours() * 100 + now.getMinutes();
+                isStoreOpen = (currentTime >= openTime && currentTime <= closeTime);
+            }
+        }
+
+        if (isStoreOpen) {
+            indicator.textContent = 'Aberto';
+            indicator.className = 'ml-2 px-3 py-1 text-sm rounded-full bg-green-500 text-white font-bold';
+            banner.innerHTML = '';
+            banner.classList.add('hidden');
+            if (finalizeBtn) {
+                finalizeBtn.disabled = false;
+                finalizeBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        } else {
+            indicator.textContent = 'Fechado';
+            indicator.className = 'ml-2 px-3 py-1 text-sm rounded-full bg-red-500 text-white font-bold';
+            banner.innerHTML = `
+                <div class="bg-red-900/50 border-l-4 border-red-500 text-red-300 p-4 rounded-md mb-8 text-center" role="alert">
+                    <p class="font-bold text-lg">No momento estamos fechados!</p>
+                    <p class="text-sm">Você pode navegar pelo cardápio, mas os pedidos estão suspensos.</p>
+                </div>
+            `;
+            banner.classList.remove('hidden');
+            
+            document.querySelectorAll('#product-list button').forEach(btn => {
+                btn.disabled = true;
+                btn.textContent = 'Fechado';
+                btn.classList.add('cursor-not-allowed', 'bg-gray-600');
+                btn.classList.remove('bg-purple-600', 'hover:bg-purple-500');
+            });
+            
+            if (finalizeBtn) {
+                finalizeBtn.disabled = true;
+                finalizeBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+        }
+        renderStoreHoursDisplay();
+    }
+
+
+    // --- RENDER FUNCTIONS ---
+    function renderProducts() {
+        productList.innerHTML = '';
+        products.forEach(product => {
+            if (product.disabled) return; 
+            const productCard = `
+                <div class="bg-gray-800 border border-gray-700 rounded-xl p-4 text-center transition-all hover:shadow-lg hover:border-purple-400 cursor-pointer flex flex-col justify-between" onclick="openItemModal(${product.id})">
+                    <div>
+                        <h3 class="font-bold text-xl text-gray-100">${product.name}</h3>
+                        <p class="text-2xl font-semibold text-purple-400 mt-2">${formatCurrency(product.price)}</p>
+                    </div>
+                    <button class="mt-4 bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-purple-500 transition-all w-full">Montar</button>
+                </div>
+            `;
+            productList.innerHTML += productCard;
+        });
+        checkStoreStatus(); // Re-check status after rendering products
+    }
+
+    function renderCart() {
+        const cartContainer = document.getElementById('cart-items-container');
+        const cartTotalEl = document.getElementById('cart-total');
+        const cartCountEl = document.getElementById('cart-count');
+        const checkoutForm = document.getElementById('checkout-form');
+        const summaryDetails = document.getElementById('cart-summary-details');
+
+        if (cart.length === 0) {
+            cartContainer.innerHTML = '<p class="text-gray-500 text-center">Seu carrinho está vazio.</p>';
+            checkoutForm.classList.add('hidden');
+            summaryDetails.classList.add('hidden');
+        } else {
+            checkoutForm.classList.remove('hidden');
+            summaryDetails.classList.remove('hidden');
+            cartContainer.innerHTML = cart.map((item, index) => `
+                <div class="flex items-start justify-between p-4 border-b border-gray-700">
+                    <div>
+                        <p class="font-bold text-lg text-gray-100">${item.name} (x${item.quantity})</p>
+                        <div class="text-sm text-gray-400 pl-2 mt-1">
+                            ${item.toppings.length > 0 ? item.toppings.map(t => `<span>- ${t.name} ${t.price > 0 ? `(+ ${formatCurrency(t.price)})` : ''}</span>`).join('<br>') : '<span>- Açaí puro</span>'}
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-bold text-lg text-purple-400">${formatCurrency(item.price * item.quantity)}</p>
+                        <div class="flex items-center gap-2 mt-2">
+                            <button onclick="updateQuantity(${index}, -1)" class="bg-gray-700 w-7 h-7 rounded-full font-bold text-lg flex items-center justify-center">-</button>
+                            <span class="font-bold w-5 text-center">${item.quantity}</span>
+                            <button onclick="updateQuantity(${index}, 1)" class="bg-gray-700 w-7 h-7 rounded-full font-bold text-lg flex items-center justify-center">+</button>
+                            <button onclick="removeFromCart(${index})" class="text-red-500 hover:text-red-700 ml-2"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const deliveryOption = document.querySelector('input[name="delivery_option"]:checked')?.value;
+        
+        let deliveryFee = 0;
+        if (deliveryOption === 'delivery' && subtotal > 0) {
+            const selectedOption = neighborhoodSelect.options[neighborhoodSelect.selectedIndex];
+            deliveryFee = parseFloat(selectedOption.dataset.fee || 0);
+        }
+        
+        const finalTotal = subtotal + deliveryFee;
+
+        document.getElementById('cart-subtotal').textContent = formatCurrency(subtotal);
+        document.getElementById('cart-delivery-fee').textContent = formatCurrency(deliveryFee);
+        cartTotalEl.textContent = formatCurrency(finalTotal);
+        cartCountEl.textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
+    }
+
+    // --- DELIVERY OPTION LOGIC ---
+    function renderDeliveryOptions() {
+        const deliveryLabel = document.getElementById('delivery-option-delivery');
+        const takeoutLabel = document.getElementById('delivery-option-takeout');
+        const deliveryRadio = deliveryLabel.querySelector('input');
+        const takeoutRadio = takeoutLabel.querySelector('input');
+        const deliveryOptionsContainer = document.getElementById('delivery-options');
+
+        deliveryLabel.classList.add('hidden');
+        takeoutLabel.classList.add('hidden');
+
+        let activeOptions = 0;
+
+        if (adminSettings.deliveryMode === 'both' || adminSettings.deliveryMode === 'delivery') {
+            deliveryLabel.classList.remove('hidden');
+            activeOptions++;
+        }
+        if (adminSettings.deliveryMode === 'both' || adminSettings.deliveryMode === 'takeout') {
+            takeoutLabel.classList.remove('hidden');
+            activeOptions++;
+        }
+
+        if (activeOptions === 0) {
+            deliveryOptionsContainer.classList.add('hidden');
+        } else {
+            deliveryOptionsContainer.classList.remove('hidden');
+        }
+
+        const currentSelected = document.querySelector('input[name="delivery_option"]:checked');
+        if (!currentSelected || currentSelected.closest('label').classList.contains('hidden')) {
+            if (!deliveryLabel.classList.contains('hidden')) {
+                deliveryRadio.checked = true;
+            } else if (!takeoutLabel.classList.contains('hidden')) {
+                takeoutRadio.checked = true;
+            }
+        }
+        
+        toggleDeliveryFields();
+    }
+
+    function toggleDeliveryFields() {
+        const deliveryOption = document.querySelector('input[name="delivery_option"]:checked')?.value;
+        if (deliveryOption === 'takeout' || !deliveryOption) {
+            deliveryFields.classList.add('hidden');
+        } else {
+            deliveryFields.classList.remove('hidden');
+        }
+        renderCart();
+    }
+
+    // --- MODAL LOGIC ---
+    function openItemModal(productId) {
+        if (!isStoreOpen) {
+            showAlert('A loja está fechada e não é possível montar pedidos agora.', 'Loja Fechada', true);
+            return;
+        }
+        const product = products.find(p => p.id === productId);
+        if (!product) return;
+        currentItem = {
+            id: productId, name: product.name, basePrice: product.price, price: product.price, quantity: 1, toppings: [],
+        };
+
+        document.getElementById('modal-title').textContent = `Monte seu ${product.name}`;
+        const modalBody = document.getElementById('modal-body');
+        modalBody.innerHTML = '';
+
+        const warningNote = `<div class="bg-yellow-900/50 border-l-4 border-yellow-500 text-yellow-300 p-4 rounded-md" role="alert"><div class="flex"><div class="py-1"><i class="fas fa-info-circle mr-3"></i></div><div><p class="font-bold">Atenção!</p><p class="text-sm">Escolha seus adicionais com carinho. Nossos copos têm espaço limitado e talvez não seja possível incluir todos os itens selecionados.</p></div></div></div>`;
+        modalBody.innerHTML += warningNote;
+
+        Object.entries(toppings).forEach(([key, category]) => {
+            const section = document.createElement('div');
+            let itemsHTML = category.items
+                .filter(item => !item.disabled) // Filter out disabled items
+                .map(item => `
+                <label class="flex items-center space-x-3 p-2 rounded-md hover:bg-gray-700 cursor-pointer">
+                    <input type="checkbox" class="h-5 w-5 rounded border-gray-500 bg-gray-600 text-purple-600 focus:ring-purple-500" name="${key}" value="${item.name}" data-price="${category.price || 0}">
+                    <span class="text-gray-300">${item.name}</span>
+                </label>
+            `).join('');
+            
+            if (itemsHTML.length > 0) {
+                section.innerHTML = `<h4 class="text-lg font-bold text-gray-200 mb-2 pb-1 border-b border-gray-600">${category.title}</h4><div class="grid grid-cols-2 sm:grid-cols-3 gap-2">${itemsHTML}</div>`;
+                modalBody.appendChild(section);
+            }
+        });
+        
+        modalBody.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', updateModalItemTotal);
+        });
+
+        updateModalItemTotal();
+        itemModal.classList.remove('hidden');
+        itemModal.classList.add('flex');
+    }
+
+    function closeItemModal() {
+        itemModal.classList.add('hidden');
+        itemModal.classList.remove('flex');
+        currentItem = null;
+    }
+
+    function updateModalItemTotal() {
+        let totalFromToppings = 0;
+        const currentToppingsList = [];
+
+        Object.entries(toppings).forEach(([key, category]) => {
+            const checkboxes = document.querySelectorAll(`#modal-body input[name="${key}"]`);
+            const checkedCheckboxes = document.querySelectorAll(`#modal-body input[name="${key}"]:checked`);
+
+            if (category.limit) {
+                if (checkedCheckboxes.length >= category.limit) {
+                    checkboxes.forEach(cb => { if (!cb.checked) cb.disabled = true; });
+                } else {
+                    checkboxes.forEach(cb => { cb.disabled = false; });
                 }
-                return; // onAuthStateChanged will re-trigger with the new user
             }
             
-            document.getElementById('user-id-display').textContent = `ID da Sessão: ${userId}`;
-            // Once we have a user, start the main application logic
-            startApp();
+            checkedCheckboxes.forEach(checkbox => {
+                const price = parseFloat(checkbox.dataset.price);
+                if (price > 0) totalFromToppings += price;
+                currentToppingsList.push({ name: checkbox.value, price: price });
+            });
+        });
+        
+        currentItem.price = currentItem.basePrice + totalFromToppings;
+        currentItem.toppings = currentToppingsList.sort((a, b) => a.price - b.price);
+        document.getElementById('modal-item-total').textContent = formatCurrency(currentItem.price);
+    }
+
+    function toggleCartModal() {
+        renderDeliveryOptions(); // Ensure options are up-to-date
+        renderCart();
+        cartModal.classList.toggle('hidden');
+        cartModal.classList.toggle('flex');
+    }
+
+    function closeConfirmationModal() {
+        confirmationModal.classList.add('hidden');
+        confirmationModal.classList.remove('flex');
+        setTimeout(() => {
+            document.getElementById('confirmation-icon').innerHTML = '<i class="fas fa-check-circle text-green-500 text-6xl mb-4"></i>';
+            document.getElementById('confirmation-title').textContent = 'Pedido Recebido!';
+            document.getElementById('confirmation-message').textContent = 'Seu resumo está pronto. Clique no botão para enviar via WhatsApp e concluir seu pedido!';
+            document.getElementById('initial-confirm-buttons').classList.remove('hidden');
+            document.getElementById('initial-confirm-buttons').classList.add('flex');
+            document.getElementById('post-send-buttons').classList.add('hidden');
+            document.getElementById('post-send-buttons').classList.remove('flex');
+        }, 300);
+    }
+
+    // --- CART LOGIC ---
+    document.getElementById('add-to-cart-btn').addEventListener('click', () => {
+        const existingItemIndex = cart.findIndex(item => {
+            if (item.id !== currentItem.id || item.toppings.length !== currentItem.toppings.length) return false;
+            const currentToppingsSet = new Set(currentItem.toppings.map(t => t.name));
+            const existingToppingsSet = new Set(item.toppings.map(t => t.name));
+            if (currentToppingsSet.size !== existingToppingsSet.size) return false;
+            return [...currentToppingsSet].every(t => existingToppingsSet.has(t));
         });
 
-    } catch (error) {
-        console.error("Firebase initialization failed:", error);
-        document.body.innerHTML = `<div class="text-center text-red-500 p-8">Falha ao conectar com o servidor: ${error.message}</div>`;
+        if (existingItemIndex > -1) {
+            cart[existingItemIndex].quantity++;
+        } else {
+            cart.push({ ...currentItem });
+        }
+        
+        saveCart();
+        closeItemModal();
+        renderCart();
+        updateCartIcon();
+    });
+
+    function updateQuantity(index, change) {
+        if (cart[index].quantity + change > 0) {
+            cart[index].quantity += change;
+        } else {
+            removeFromCart(index);
+            return;
+        }
+        saveCart();
+        renderCart();
+        updateCartIcon();
     }
-}
 
-window.onload = initializeFirebase;
+    function removeFromCart(index) {
+        cart.splice(index, 1);
+        saveCart();
+        renderCart();
+        updateCartIcon();
+    }
 
-</script>
+    function updateCartIcon() {
+        const cartCountEl = document.getElementById('cart-count');
+        const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+        cartCountEl.textContent = totalItems;
+        if (totalItems > 0) {
+            cartButton.classList.remove('hidden');
+        } else {
+             cartButton.classList.add('hidden');
+             if (cartModal.classList.contains('flex')) {
+                 toggleCartModal();
+             }
+        }
+    }
+
+    // --- ORDER FINALIZATION LOGIC ---
+    function finalizeOrder() {
+        if (!isStoreOpen) {
+            showAlert('A loja está fechada e não está aceitando pedidos no momento.', 'Loja Fechada', true);
+            return;
+        }
+
+        if (cart.length === 0) {
+            showAlert('Seu carrinho está vazio!', 'Carrinho Vazio', true);
+            return;
+        }
+        const name = customerNameInput.value.trim();
+        const address = customerAddressInput.value.trim();
+        const neighborhood = neighborhoodSelect.value;
+        const payment = document.getElementById('payment-method').value;
+        const obs = document.getElementById('observations').value.trim();
+        const deliveryOption = document.querySelector('input[name="delivery_option"]:checked')?.value;
+
+        if (!deliveryOption) {
+            showAlert('Nenhuma opção de entrega/retirada está disponível no momento.', 'Ops!', true);
+            return;
+        }
+
+        if (!name) {
+            showAlert('Por favor, preencha seu Nome para continuar.', 'Dados Incompletos', true);
+            return;
+        }
+        
+        let deliveryFee = 0;
+        let summary = `*NOVO PEDIDO - SABOR AÇAÍTERIA*\n\n*Cliente:* ${name}\n`;
+
+        if (deliveryOption === 'delivery') {
+            if (!address || !neighborhood) {
+                showAlert('Por favor, selecione o Bairro e preencha o Endereço para entrega.', 'Dados Incompletos', true);
+                return;
+            }
+            summary += `*Opção:* ENTREGA\n*Tempo Estimado:* 20-60 min\n*Endereço:* ${address}, ${neighborhood}\n\n`;
+            const selectedOption = neighborhoodSelect.options[neighborhoodSelect.selectedIndex];
+            deliveryFee = parseFloat(selectedOption.dataset.fee || 0);
+        } else {
+            summary += `*Opção:* RETIRAR NA LOJA\n*Tempo Estimado:* 20-30 min\n\n`;
+        }
+
+        summary += `*ITENS DO PEDIDO:*\n------------------------\n`;
+        cart.forEach(item => {
+            summary += `*${item.quantity}x ${item.name}*\n`;
+            if (item.toppings.length > 0) {
+                item.toppings.forEach(t => { summary += `  - ${t.name}\n`; });
+            } else {
+                summary += `  - Açaí puro\n`;
+            }
+            summary += `Subtotal: ${formatCurrency(item.price * item.quantity)}\n------------------------\n`;
+        });
+
+        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const finalTotal = subtotal + deliveryFee;
+        summary += `\n*Subtotal dos Itens: ${formatCurrency(subtotal)}*\n`;
+        if (deliveryOption === 'delivery') summary += `*Taxa de Entrega: ${formatCurrency(deliveryFee)}*\n`;
+        summary += `*TOTAL DO PEDIDO: ${formatCurrency(finalTotal)}*\n*Forma de Pagamento:* ${payment}\n`;
+        if (obs) summary += `*Observações:* ${obs}\n`;
+
+        whatsAppMessage = encodeURIComponent(summary);
+        document.getElementById('order-summary').innerHTML = summary.replace(/\n/g, '<br>').replace(/\*(.*?)\*/g, '<strong>$1</strong>');
+        toggleCartModal(); 
+        confirmationModal.classList.remove('hidden');
+        confirmationModal.classList.add('flex');
+    }
+
+    function sendOrderViaWhatsApp() {
+        const yourNumber = '5594991623576'; 
+        const url = `https://wa.me/${yourNumber}?text=${whatsAppMessage}`;
+        window.open(url, '_blank');
+        
+        document.getElementById('confirmation-icon').innerHTML = '<i class="fab fa-whatsapp-square text-green-400 text-6xl mb-4"></i>';
+        document.getElementById('confirmation-title').textContent = 'Quase lá!';
+        document.getElementById('confirmation-message').textContent = 'A janela do WhatsApp foi aberta. Após enviar sua mensagem, clique no botão abaixo para confirmar e limpar seu carrinho.';
+        document.getElementById('initial-confirm-buttons').classList.add('hidden');
+        document.getElementById('post-send-buttons').classList.remove('hidden');
+        document.getElementById('post-send-buttons').classList.add('flex');
+    }
+
+    function confirmOrderSent() {
+        cart = [];
+        saveCart();
+        closeConfirmationModal();
+        renderCart();
+        updateCartIcon();
+        showAlert('Ótimo! Seu carrinho foi limpo. Aguarde a confirmação da loja no WhatsApp.', 'Pedido Enviado');
+    }
+
+    // --- ADMIN PANEL LOGIC ---
+    function openAdminPanel(event) {
+        event.preventDefault();
+        if (isAdmin) {
+            renderAdminPanel();
+            adminModal.classList.remove('hidden');
+            adminModal.classList.add('flex');
+        } else {
+            passwordModal.classList.remove('hidden');
+            passwordModal.classList.add('flex');
+            adminEmailInput.focus();
+        }
+    }
+
+    function closePasswordModal() {
+        passwordModal.classList.add('hidden');
+        passwordModal.classList.remove('flex');
+        adminEmailInput.value = '';
+        adminPasswordInput.value = '';
+    }
+
+    function checkAdminPassword() {
+        const email = adminEmailInput.value;
+        const password = adminPasswordInput.value;
+        signInWithEmailAndPassword(auth, email, password)
+            .then((userCredential) => {
+                // Signed in 
+                closePasswordModal();
+                renderAdminPanel();
+                adminModal.classList.remove('hidden');
+                adminModal.classList.add('flex');
+            })
+            .catch((error) => {
+                closePasswordModal();
+                showAlert("E-mail ou senha incorretos.", 'Acesso Negado', true);
+            });
+    }
+
+    function closeAdminModal() {
+        adminModal.classList.add('hidden');
+        adminModal.classList.remove('flex');
+    }
+
+    function renderAdminPanel() {
+        const adminBody = document.getElementById('admin-body');
+        adminBody.innerHTML = ''; // Clear previous content
+
+        // Section for Store Settings
+        const daysOfWeek = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
+        let daysCheckboxesHTML = daysOfWeek.map((day, index) => `
+            <label class="flex items-center gap-2 p-1.5 rounded-md hover:bg-gray-700 cursor-pointer">
+                <input type="checkbox" name="admin_open_day" value="${index}" class="h-4 w-4 rounded text-purple-600 focus:ring-purple-500" ${adminSettings.openDays.includes(index) ? 'checked' : ''}>
+                <span>${day}</span>
+            </label>
+        `).join('');
+
+        let settingsHTML = `
+            <div class="p-4 bg-gray-900/50 rounded-lg">
+                <h4 class="text-xl font-bold text-purple-400 mb-4">Configurações da Loja</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                    <div>
+                        <h5 class="font-semibold text-gray-300 mb-2">Status da Loja</h5>
+                        <div class="space-y-2">
+                            <label class="flex items-center p-2 rounded-md hover:bg-gray-700 cursor-pointer"><input type="radio" name="admin_store_status" value="auto" class="h-4 w-4 mr-2 text-purple-600 focus:ring-purple-500" ${adminSettings.storeStatus === 'auto' ? 'checked' : ''}> Automático (por horário)</label>
+                            <label class="flex items-center p-2 rounded-md hover:bg-gray-700 cursor-pointer"><input type="radio" name="admin_store_status" value="open" class="h-4 w-4 mr-2 text-purple-600 focus:ring-purple-500" ${adminSettings.storeStatus === 'open' ? 'checked' : ''}> Aberto (Manual)</label>
+                            <label class="flex items-center p-2 rounded-md hover:bg-gray-700 cursor-pointer"><input type="radio" name="admin_store_status" value="closed" class="h-4 w-4 mr-2 text-purple-600 focus:ring-purple-500" ${adminSettings.storeStatus === 'closed' ? 'checked' : ''}> Fechado (Manual)</label>
+                        </div>
+                    </div>
+                    <div>
+                        <h5 class="font-semibold text-gray-300 mb-2">Opções de Pedido</h5>
+                         <div class="space-y-2">
+                            <label class="flex items-center p-2 rounded-md hover:bg-gray-700 cursor-pointer"><input type="radio" name="admin_delivery_mode" value="both" class="h-4 w-4 mr-2 text-purple-600 focus:ring-purple-500" ${adminSettings.deliveryMode === 'both' ? 'checked' : ''}> Delivery e Retirada</label>
+                            <label class="flex items-center p-2 rounded-md hover:bg-gray-700 cursor-pointer"><input type="radio" name="admin_delivery_mode" value="delivery" class="h-4 w-4 mr-2 text-purple-600 focus:ring-purple-500" ${adminSettings.deliveryMode === 'delivery' ? 'checked' : ''}> Apenas Delivery</label>
+                            <label class="flex items-center p-2 rounded-md hover:bg-gray-700 cursor-pointer"><input type="radio" name="admin_delivery_mode" value="takeout" class="h-4 w-4 mr-2 text-purple-600 focus:ring-purple-500" ${adminSettings.deliveryMode === 'takeout' ? 'checked' : ''}> Apenas Retirada</label>
+                        </div>
+                    </div>
+                    <div class="md:col-span-2">
+                         <h5 class="font-semibold text-gray-300 mb-2">Horário de Funcionamento (Modo Automático)</h5>
+                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div class="sm:col-span-2">
+                                <h6 class="text-sm font-medium text-gray-400 mb-1">Dias da Semana</h6>
+                                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-4 gap-y-2 text-sm">
+                                    ${daysCheckboxesHTML}
+                                </div>
+                            </div>
+                            <div>
+                                <h6 class="text-sm font-medium text-gray-400 mb-1">Horário</h6>
+                                <div class="flex items-center gap-2">
+                                    <input type="time" id="admin-opening-time" value="${adminSettings.openingTime}" class="bg-gray-700 p-2 rounded-md border border-gray-600 w-full">
+                                    <span>às</span>
+                                    <input type="time" id="admin-closing-time" value="${adminSettings.closingTime}" class="bg-gray-700 p-2 rounded-md border border-gray-600 w-full">
+                                </div>
+                            </div>
+                         </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        adminBody.innerHTML += settingsHTML;
+
+        // Section for Products (Tamanhos)
+        let productsHTML = `<div class="p-4 bg-gray-900/50 rounded-lg"><h4 class="text-xl font-bold text-purple-400 mb-4">Tamanhos (Produtos)</h4><div id="admin-products-list" class="space-y-3">`;
+        products.forEach((product, index) => {
+            productsHTML += `
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-3 items-center p-2 bg-gray-700 rounded-md admin-item" data-type="product" data-index="${index}">
+                    <input type="text" value="${product.name}" class="admin-name col-span-2 bg-gray-600 p-2 rounded-md border border-gray-500" placeholder="Nome do Produto">
+                    <input type="number" value="${product.price.toFixed(2)}" class="admin-price bg-gray-600 p-2 rounded-md border border-gray-500" placeholder="Preço">
+                    <div class="flex items-center justify-between gap-2">
+                        <label class="flex items-center gap-2 text-sm cursor-pointer"><input type="checkbox" class="admin-disabled h-5 w-5" ${product.disabled ? 'checked' : ''}> Bloquear</label>
+                        <button onclick="removeAdminItem(this)" class="text-red-500 hover:text-red-400"><i class="fas fa-trash-alt"></i></button>
+                    </div>
+                </div>`;
+        });
+        productsHTML += `</div><button onclick="addAdminItem('product')" class="mt-4 bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-500 text-sm"><i class="fas fa-plus mr-2"></i>Adicionar Tamanho</button></div>`;
+        adminBody.innerHTML += productsHTML;
+
+        // Section for Toppings
+        let toppingsHTML = `<div class="p-4 bg-gray-900/50 rounded-lg mt-6"><h4 class="text-xl font-bold text-purple-400 mb-4">Complementos</h4>`;
+        Object.entries(toppings).forEach(([key, category]) => {
+            toppingsHTML += `<div class="mt-4"><h5 class="font-semibold text-gray-300 mb-2">${category.title}</h5><div id="admin-toppings-${key}" class="space-y-2">`;
+            (category.items || []).forEach((item, index) => {
+                toppingsHTML += `
+                    <div class="flex items-center gap-3 p-2 bg-gray-700 rounded-md admin-item" data-type="topping" data-category="${key}" data-index="${index}">
+                        <input type="text" value="${item.name}" class="admin-name flex-grow bg-gray-600 p-2 rounded-md border border-gray-500" placeholder="Nome do Complemento">
+                        <label class="flex items-center gap-2 text-sm cursor-pointer whitespace-nowrap"><input type="checkbox" class="admin-disabled h-5 w-5" ${item.disabled ? 'checked' : ''}> Bloquear</label>
+                        <button onclick="removeAdminItem(this)" class="text-red-500 hover:text-red-400"><i class="fas fa-trash-alt"></i></button>
+                    </div>`;
+            });
+            toppingsHTML += `</div><button onclick="addAdminItem('topping', '${key}')" class="mt-3 bg-blue-600 text-white font-semibold py-1 px-3 rounded-lg hover:bg-blue-500 text-xs"><i class="fas fa-plus mr-1"></i>Adicionar Complemento</button></div>`;
+        });
+        toppingsHTML += `</div>`;
+        adminBody.innerHTML += toppingsHTML;
+    }
+
+    function addAdminItem(type, categoryKey = '') {
+        const newItemHTML = (type === 'product')
+            ? `<div class="grid grid-cols-1 md:grid-cols-4 gap-3 items-center p-2 bg-gray-700 rounded-md admin-item" data-type="product">
+                   <input type="text" value="Novo Produto" class="admin-name col-span-2 bg-gray-600 p-2 rounded-md border border-gray-500">
+                   <input type="number" value="0.00" class="admin-price bg-gray-600 p-2 rounded-md border border-gray-500">
+                   <div class="flex items-center justify-between gap-2">
+                       <label class="flex items-center gap-2 text-sm cursor-pointer"><input type="checkbox" class="admin-disabled h-5 w-5"> Bloquear</label>
+                       <button onclick="removeAdminItem(this)" class="text-red-500 hover:text-red-400"><i class="fas fa-trash-alt"></i></button>
+                   </div>
+               </div>`
+            : `<div class="flex items-center gap-3 p-2 bg-gray-700 rounded-md admin-item" data-type="topping" data-category="${categoryKey}">
+                   <input type="text" value="Novo Complemento" class="admin-name flex-grow bg-gray-600 p-2 rounded-md border border-gray-500">
+                   <label class="flex items-center gap-2 text-sm cursor-pointer whitespace-nowrap"><input type="checkbox" class="admin-disabled h-5 w-5"> Bloquear</label>
+                   <button onclick="removeAdminItem(this)" class="text-red-500 hover:text-red-400"><i class="fas fa-trash-alt"></i></button>
+               </div>`;
+        
+        const containerId = (type === 'product') ? 'admin-products-list' : `admin-toppings-${categoryKey}`;
+        document.getElementById(containerId).insertAdjacentHTML('beforeend', newItemHTML);
+    }
+
+    function removeAdminItem(button) {
+        button.closest('.admin-item').remove();
+    }
+
+    function showConfirmationModal(message, onConfirm) {
+        document.getElementById('confirm-action-message').textContent = message;
+        
+        const confirmBtn = document.getElementById('confirm-action-confirm-btn');
+        const cancelBtn = document.getElementById('confirm-action-cancel-btn');
+
+        const confirmClickHandler = () => {
+            onConfirm();
+            closeConfirmationActionModal();
+        };
+
+        const cancelClickHandler = () => {
+            closeConfirmationActionModal();
+        };
+
+        const newConfirmBtn = confirmBtn.cloneNode(true);
+        confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+        newConfirmBtn.addEventListener('click', confirmClickHandler, { once: true });
+
+        const newCancelBtn = cancelBtn.cloneNode(true);
+        cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+        newCancelBtn.addEventListener('click', cancelClickHandler, { once: true });
+
+        confirmActionModal.classList.remove('hidden');
+        confirmActionModal.classList.add('flex');
+    }
+
+    function closeConfirmationActionModal() {
+        confirmActionModal.classList.add('hidden');
+        confirmActionModal.classList.remove('flex');
+    }
+
+    async function resetToDefaults() {
+        if (!isAdmin) {
+            showAlert("Você não tem permissão para esta ação.", "Acesso Negado", true);
+            return;
+        }
+        showConfirmationModal(
+            "Tem certeza que deseja restaurar o cardápio e as configurações para os valores padrão? Todas as suas alterações serão perdidas.",
+            async () => {
+                const defaultSettings = {
+                    storeStatus: 'auto', deliveryMode: 'both', openingTime: '14:30', closingTime: '22:15', openDays: [0, 1, 2, 3, 4, 5, 6]
+                };
+                const defaultProducts = [
+                    { id: 1, name: 'Copo 300ml', price: 14.00, disabled: false }, { id: 2, name: 'Copo 400ml', price: 17.00, disabled: false },
+                    { id: 3, name: 'Copo 500ml', price: 20.00, disabled: false }, { id: 4, name: 'Barca M', price: 55.00, disabled: true }
+                ];
+                const defaultToppings = { /* ... seu objeto de toppings padrão aqui ... */ };
+
+                try {
+                    await setDoc(doc(db, "settings", "store"), defaultSettings);
+                    await setDoc(doc(db, "menu", "main"), { products: defaultProducts, toppings: defaultToppings });
+                    closeAdminModal();
+                    showAlert('Cardápio e configurações restaurados!', 'Sucesso', false);
+                } catch (error) {
+                    showAlert("Erro ao restaurar. Verifique o console.", "Erro", true);
+                }
+            }
+        );
+    }
+
+    // --- INITIALIZATION ---
+    window.initializeApp = () => {
+        // This function is called after Firebase scripts are loaded
+        onAuthStateChanged(auth, user => {
+            isAdmin = !!user;
+        });
+
+        loadDataFromFirebase();
+        loadCart();
+        loadCustomerInfo();
+        updateCartIcon();
+
+        // Event listeners
+        customerNameInput.addEventListener('input', saveCustomerInfo);
+        customerAddressInput.addEventListener('input', saveCustomerInfo);
+        neighborhoodSelect.addEventListener('change', () => {
+            saveCustomerInfo();
+            renderCart();
+        });
+        deliveryOptionRadios.forEach(radio => {
+            radio.addEventListener('change', () => {
+                toggleDeliveryFields();
+                saveCustomerInfo();
+            });
+        });
+        
+        adminPasswordInput.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                checkAdminPassword();
+            }
+        });
+        adminEmailInput.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                adminPasswordInput.focus();
+            }
+        });
+    };
+
+    // Make functions available in the global scope so inline onclicks can find them
+    window.openAdminPanel = openAdminPanel;
+    window.closePasswordModal = closePasswordModal;
+    window.checkAdminPassword = checkAdminPassword;
+    window.closeAdminModal = closeAdminModal;
+    window.saveAdminChanges = saveAdminChanges;
+    window.resetToDefaults = resetToDefaults;
+    window.addAdminItem = addAdminItem;
+    window.removeAdminItem = removeAdminItem;
+    window.openItemModal = openItemModal;
+    window.closeItemModal = closeItemModal;
+    window.toggleCartModal = toggleCartModal;
+    window.updateQuantity = updateQuantity;
+    window.removeFromCart = removeFromCart;
+    window.finalizeOrder = finalizeOrder;
+    window.sendOrderViaWhatsApp = sendOrderViaWhatsApp;
+    window.confirmOrderSent = confirmOrderSent;
+    window.closeConfirmationModal = closeConfirmationModal;
+    window.closeAlertModal = closeAlertModal;
+
+    </script>
 </body>
 </html>
 
