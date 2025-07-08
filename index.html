@@ -51,6 +51,23 @@
         input[type="time"]::-webkit-calendar-picker-indicator {
             filter: invert(0.8);
         }
+        /* Estilos para os separadores do painel de admin */
+        .admin-tab {
+            cursor: pointer;
+            padding: 0.75rem 1.5rem;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s ease-in-out;
+        }
+        .admin-tab.active {
+            color: #c084fc; /* purple-400 */
+            border-bottom-color: #c084fc;
+        }
+        .admin-tab-content {
+            display: none;
+        }
+        .admin-tab-content.active {
+            display: block;
+        }
     </style>
 </head>
 <body class="bg-gray-900 text-gray-300">
@@ -271,6 +288,20 @@
                 <h3 class="text-2xl font-bold text-amber-400"><i class="fas fa-user-shield mr-2"></i>Painel do Administrador</h3>
                 <button id="close-admin-modal-btn" class="text-gray-400 hover:text-red-500"><i class="fas fa-times text-2xl"></i></button>
             </div>
+            <!-- Admin Tabs -->
+            <div class="border-b border-gray-700">
+                <nav id="admin-tabs" class="flex space-x-4 px-6 -mb-px">
+                    <button data-tab="financeiro" class="admin-tab active">
+                        <i class="fas fa-chart-line mr-2"></i>Financeiro
+                    </button>
+                    <button data-tab="cardapio" class="admin-tab">
+                        <i class="fas fa-book-open mr-2"></i>Cardápio
+                    </button>
+                    <button data-tab="configuracoes" class="admin-tab">
+                        <i class="fas fa-cog mr-2"></i>Configurações
+                    </button>
+                </nav>
+            </div>
             <div id="admin-body" class="p-6 space-y-6 overflow-y-auto modal-body">
                 <!-- Admin content will be dynamically injected here -->
             </div>
@@ -320,15 +351,14 @@
     
     // --- IMPORTAÇÕES DO FIREBASE ---
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, setDoc, collection, addDoc, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     // --- CONFIGURAÇÃO DO FIREBASE ---
-    // As suas credenciais foram inseridas aqui.
     const firebaseConfig = {
       apiKey: "AIzaSyA6dAMBp1HCAvcZ3ByyZ1thmQATUfmR7E8",
       authDomain: "cardapiosaborgeral.firebaseapp.com",
       projectId: "cardapiosaborgeral",
-      storageBucket: "cardapiosaborgeral.appspot.com", // CORRIGIDO
+      storageBucket: "cardapiosaborgeral.appspot.com",
       messagingSenderId: "615238006330",
       appId: "1:615238006330:web:38aaf9158c0a0eed432703",
       measurementId: "G-2HDSMX7GYB"
@@ -363,7 +393,6 @@
     const FirebaseService = {
         db: null,
 
-        // Inicializa o Firebase e a conexão com o Firestore
         init() {
             try {
                 const app = initializeApp(firebaseConfig);
@@ -377,7 +406,6 @@
             }
         },
 
-        // Carrega todos os dados de configuração do Firestore
         async loadAllData() {
             if (!this.db) return { adminSettings: defaultAdminSettings, products: defaultProducts, toppings: defaultToppings };
 
@@ -402,17 +430,49 @@
                     getOrCreateDoc(productsRef, defaultProducts),
                     getOrCreateDoc(toppingsRef, defaultToppings)
                 ]);
-                console.log("Dados carregados do Firestore com sucesso.");
+                console.log("Dados de configuração carregados do Firestore com sucesso.");
                 return { adminSettings, products, toppings };
             } catch (error) {
-                console.error("Erro ao carregar dados do Firestore:", error);
+                console.error("Erro ao carregar dados de configuração do Firestore:", error);
                 UI.showAlert("Erro de Base de Dados", "Não foi possível carregar as configurações do cardápio. Usando valores padrão.", true);
                 return { adminSettings: defaultAdminSettings, products: defaultProducts, toppings: defaultToppings };
             }
         },
+        
+        async loadOrders() {
+            if (!this.db) return [];
+            try {
+                const querySnapshot = await getDocs(collection(this.db, "pedidos"));
+                const orders = [];
+                querySnapshot.forEach((doc) => {
+                    orders.push({ id: doc.id, ...doc.data() });
+                });
+                console.log(`${orders.length} pedidos carregados do Firestore.`);
+                return orders;
+            } catch (error) {
+                console.error("Erro ao carregar pedidos do Firestore:", error);
+                UI.showAlert("Erro ao Carregar Relatórios", "Não foi possível carregar os dados de vendas.", true);
+                return [];
+            }
+        },
 
-        // Guarda todas as configurações do painel de administração
-        async saveAllData({ adminSettings, products, toppings }) {
+        async saveOrder(orderData) {
+            if (!this.db) {
+                UI.showAlert("Erro de Base de Dados", "Não foi possível salvar o pedido.", true);
+                return false;
+            }
+            try {
+                await addDoc(collection(this.db, "pedidos"), orderData);
+                console.log("Pedido salvo no Firestore com sucesso.");
+                return true;
+            } catch (error) {
+                console.error("Erro ao salvar pedido no Firestore:", error);
+                UI.showAlert("Erro ao Salvar Pedido", "Não foi possível registar o seu pedido na base de dados.", true);
+                return false;
+            }
+        },
+
+        async saveAllAdminData({ adminSettings, products, toppings }) {
             if (!this.db) {
                 UI.showAlert("Erro de Base de Dados", "Não foi possível salvar. Verifique a conexão com o Firebase.", true);
                 return false;
@@ -441,9 +501,8 @@
     // =================================================================================
 
     const UI = {
-        elements: {}, // CORRIGIDO: Inicia vazio
+        elements: {},
 
-        // CORRIGIDO: Método para popular os elementos depois do DOM carregar
         init() {
             this.elements = {
                 productList: document.getElementById('product-list'),
@@ -485,6 +544,7 @@
                 confirmationTitle: document.getElementById('confirmation-title'),
                 confirmationMessage: document.getElementById('confirmation-message'),
                 adminBody: document.getElementById('admin-body'),
+                adminTabs: document.getElementById('admin-tabs'),
                 closeAlertModalBtn: document.getElementById('close-alert-modal-btn'),
                 adminPanelBtn: document.getElementById('admin-panel-btn'),
                 cancelPasswordBtn: document.getElementById('cancel-password-btn'),
@@ -504,13 +564,12 @@
             };
         },
 
-        // Formata um número para a moeda Real (BRL)
         formatCurrency(value) {
             return `R$ ${Number(value).toFixed(2).replace('.', ',')}`;
         },
         
-        // Exibe um alerta personalizado
         showAlert(message, title = 'Atenção!', isError = false) {
+            if (!this.elements.alertModal) return;
             this.elements.alertModal.querySelector('#alert-message').textContent = message;
             this.elements.alertModal.querySelector('#alert-title').textContent = title;
             const iconContainer = this.elements.alertModal.querySelector('#alert-icon');
@@ -524,25 +583,22 @@
             }, 10);
         },
 
-        // Fecha o alerta personalizado
         closeAlertModal() {
+            if (!this.elements.alertModal) return;
             this.elements.alertModal.classList.add('opacity-0');
             this.elements.alertModal.querySelector('div > div').classList.add('scale-95');
             setTimeout(() => { this.elements.alertModal.classList.add('hidden'); }, 300);
         },
 
-        // Abre ou fecha um modal genérico
         toggleModal(modalElement, show) {
-            if (show) {
-                modalElement.classList.remove('hidden');
-                modalElement.classList.add('flex');
-            } else {
-                modalElement.classList.add('hidden');
-                modalElement.classList.remove('flex');
+            if (modalElement) {
+                modalElement.classList.toggle('hidden', !show);
+                modalElement.classList.toggle('flex', show);
             }
         },
         
         showConfirmationModal(message, onConfirm) {
+            if (!this.elements.confirmActionModal) return;
             this.elements.confirmActionModal.querySelector('#confirm-action-message').textContent = message;
             
             const confirmBtn = this.elements.confirmActionModal.querySelector('#confirm-action-confirm-btn');
@@ -560,7 +616,6 @@
             this.toggleModal(this.elements.confirmActionModal, true);
         },
 
-        // Atualiza o status da loja (aberto/fechado) na UI
         updateStoreStatus(isStoreOpen, adminSettings) {
             const { storeStatusIndicator, storeStatusBanner, storeHoursDisplay } = this.elements;
             const dayNames = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
@@ -568,7 +623,9 @@
             if (adminSettings.openDays?.length > 0) {
                 daysString = adminSettings.openDays.length === 7 ? "Todos os dias" : adminSettings.openDays.sort().map(i => dayNames[i]).join(', ');
             }
-            storeHoursDisplay.querySelector('span').textContent = `${adminSettings.openingTime} às ${adminSettings.closingTime} (${daysString})`;
+            if (storeHoursDisplay) {
+                storeHoursDisplay.querySelector('span').textContent = `${adminSettings.openingTime} às ${adminSettings.closingTime} (${daysString})`;
+            }
 
             if (isStoreOpen) {
                 storeStatusIndicator.textContent = 'Aberto';
@@ -582,7 +639,6 @@
             }
         },
 
-        // Renderiza a lista de produtos na página principal
         renderProducts(products, isStoreOpen) {
             this.elements.productList.innerHTML = '';
             products.forEach(product => {
@@ -601,7 +657,6 @@
             });
         },
 
-        // Renderiza o conteúdo do carrinho de compras
         renderCart(cart, deliveryFee) {
             const { cartItemsContainer, checkoutForm, cartSummaryDetails, cartSubtotal, cartDeliveryFee, cartTotal, cartCount } = this.elements;
             
@@ -645,7 +700,6 @@
             cartTotal.textContent = this.formatCurrency(finalTotal);
         },
 
-        // Renderiza o modal de customização de item
         renderItemModal(product, toppings) {
             this.elements.modalTitle.textContent = `Monte seu ${product.name}`;
             this.elements.modalBody.innerHTML = `<div class="bg-yellow-900/50 border-l-4 border-yellow-500 text-yellow-300 p-4 rounded-md" role="alert"><div class="flex"><div class="py-1"><i class="fas fa-info-circle mr-3"></i></div><div><p class="font-bold">Atenção!</p><p class="text-sm">Escolha seus adicionais com carinho. Nossos copos têm espaço limitado.</p></div></div></div>`;
@@ -667,7 +721,6 @@
             this.toggleModal(this.elements.itemModal, true);
         },
 
-        // Atualiza o total do item no modal de customização
         updateModalItemTotal(basePrice, toppings) {
             let totalFromToppings = 0;
             const currentToppingsList = [];
@@ -693,67 +746,20 @@
             return { price: newPrice, toppings: currentToppingsList.sort((a, b) => a.price - b.price) };
         },
         
-        // Renderiza o painel de administração
-        renderAdminPanel(adminSettings, products, toppings) {
+        renderAdminPanel(adminSettings, products, toppings, orders) {
             const { adminBody } = this.elements;
-            adminBody.innerHTML = '';
-            const daysOfWeek = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
-            
-            // Renderiza as configurações gerais e de funcionamento
-            adminBody.innerHTML += `
-                <div class="p-4 bg-gray-900/50 rounded-lg">
-                    <h4 class="text-xl font-bold text-purple-400 mb-4">Configurações Gerais</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                        <div><label for="admin-whatsapp-number" class="block text-sm font-medium text-gray-300 mb-1">Número do WhatsApp</label><input type="text" id="admin-whatsapp-number" value="${adminSettings.whatsappNumber}" class="bg-gray-700 p-2 rounded-md border border-gray-600 w-full"></div>
-                        <div><label for="admin-address" class="block text-sm font-medium text-gray-300 mb-1">Endereço da Loja</label><input type="text" id="admin-address" value="${adminSettings.address}" class="bg-gray-700 p-2 rounded-md border border-gray-600 w-full"></div>
-                    </div>
-                </div>
-                <div class="p-4 bg-gray-900/50 rounded-lg">
-                    <h4 class="text-xl font-bold text-purple-400 mb-4">Controle de Funcionamento</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                        <div>
-                            <h5 class="font-semibold text-gray-300 mb-2">Status da Loja</h5>
-                            <div class="space-y-2">
-                                <label class="flex items-center p-2 rounded-md hover:bg-gray-700 cursor-pointer"><input type="radio" name="admin_store_status" value="auto" class="h-4 w-4 mr-2 text-purple-600" ${adminSettings.storeStatus === 'auto' ? 'checked' : ''}> Automático</label>
-                                <label class="flex items-center p-2 rounded-md hover:bg-gray-700 cursor-pointer"><input type="radio" name="admin_store_status" value="open" class="h-4 w-4 mr-2 text-purple-600" ${adminSettings.storeStatus === 'open' ? 'checked' : ''}> Aberto (Manual)</label>
-                                <label class="flex items-center p-2 rounded-md hover:bg-gray-700 cursor-pointer"><input type="radio" name="admin_store_status" value="closed" class="h-4 w-4 mr-2 text-purple-600" ${adminSettings.storeStatus === 'closed' ? 'checked' : ''}> Fechado (Manual)</label>
-                            </div>
-                        </div>
-                        <div>
-                             <h5 class="font-semibold text-gray-300 mb-2">Opções de Pedido</h5>
-                             <div class="space-y-2">
-                                <label class="flex items-center p-2 rounded-md hover:bg-gray-700 cursor-pointer"><input type="radio" name="admin_delivery_mode" value="both" class="h-4 w-4 mr-2 text-purple-600" ${adminSettings.deliveryMode === 'both' ? 'checked' : ''}> Delivery e Retirada</label>
-                                <label class="flex items-center p-2 rounded-md hover:bg-gray-700 cursor-pointer"><input type="radio" name="admin_delivery_mode" value="delivery" class="h-4 w-4 mr-2 text-purple-600" ${adminSettings.deliveryMode === 'delivery' ? 'checked' : ''}> Apenas Delivery</label>
-                                <label class="flex items-center p-2 rounded-md hover:bg-gray-700 cursor-pointer"><input type="radio" name="admin_delivery_mode" value="takeout" class="h-4 w-4 mr-2 text-purple-600" ${adminSettings.deliveryMode === 'takeout' ? 'checked' : ''}> Apenas Retirada</label>
-                            </div>
-                        </div>
-                        <div class="md:col-span-2">
-                            <h5 class="font-semibold text-gray-300 mb-2">Horário (Modo Automático)</h5>
-                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                <div class="sm:col-span-2">
-                                    <h6 class="text-sm font-medium text-gray-400 mb-1">Dias da Semana</h6>
-                                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-4 gap-y-2 text-sm">${daysOfWeek.map((day, index) => `<label class="flex items-center gap-2 p-1.5 rounded-md hover:bg-gray-700 cursor-pointer"><input type="checkbox" name="admin_open_day" value="${index}" class="h-4 w-4 rounded text-purple-600" ${adminSettings.openDays.includes(index) ? 'checked' : ''}><span>${day}</span></label>`).join('')}</div>
-                                </div>
-                                <div>
-                                    <h6 class="text-sm font-medium text-gray-400 mb-1">Horário</h6>
-                                    <div class="flex items-center gap-2">
-                                        <input type="time" id="admin-opening-time" value="${adminSettings.openingTime}" class="bg-gray-700 p-2 rounded-md border border-gray-600 w-full">
-                                        <span>às</span>
-                                        <input type="time" id="admin-closing-time" value="${adminSettings.closingTime}" class="bg-gray-700 p-2 rounded-md border border-gray-600 w-full">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>`;
+            adminBody.innerHTML = ''; // Limpa o conteúdo anterior
 
-            // Renderiza os produtos
+            // --- Painel Financeiro ---
+            const financialContent = this.getFinancialPanelHTML(orders);
+
+            // --- Painel do Cardápio ---
+            let menuContent = `<div id="admin-menu-content" class="admin-tab-content space-y-6">`;
             let productsHTML = `<div class="p-4 bg-gray-900/50 rounded-lg"><h4 class="text-xl font-bold text-purple-400 mb-4">Cardápio: Tamanhos (Produtos)</h4><div id="admin-products-list" class="space-y-3">`;
             products.forEach((product) => { productsHTML += this.getAdminItemHTML('product', product); });
             productsHTML += `</div><button data-action="add-admin-item" data-type="product" class="mt-4 bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-500 text-sm"><i class="fas fa-plus mr-2"></i>Adicionar Tamanho</button></div>`;
-            adminBody.innerHTML += productsHTML;
+            menuContent += productsHTML;
             
-            // Renderiza os complementos
             let toppingsHTML = `<div class="p-4 bg-gray-900/50 rounded-lg mt-6"><h4 class="text-xl font-bold text-purple-400 mb-4">Cardápio: Complementos</h4>`;
             Object.entries(toppings).forEach(([key, category]) => {
                 toppingsHTML += `<div class="mt-4"><h5 class="font-semibold text-gray-300 mb-2">${category.title}</h5><div id="admin-toppings-${key}" class="space-y-2">`;
@@ -761,10 +767,139 @@
                 toppingsHTML += `</div><button data-action="add-admin-item" data-type="topping" data-category="${key}" class="mt-3 bg-blue-600 text-white font-semibold py-1 px-3 rounded-lg hover:bg-blue-500 text-xs"><i class="fas fa-plus mr-1"></i>Adicionar</button></div>`;
             });
             toppingsHTML += `</div>`;
-            adminBody.innerHTML += toppingsHTML;
+            menuContent += toppingsHTML;
+            menuContent += `</div>`;
+
+            // --- Painel de Configurações ---
+            const daysOfWeek = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
+            const settingsContent = `
+                <div id="admin-settings-content" class="admin-tab-content space-y-6">
+                    <div class="p-4 bg-gray-900/50 rounded-lg">
+                        <h4 class="text-xl font-bold text-purple-400 mb-4">Configurações Gerais</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                            <div><label for="admin-whatsapp-number" class="block text-sm font-medium text-gray-300 mb-1">Número do WhatsApp</label><input type="text" id="admin-whatsapp-number" value="${adminSettings.whatsappNumber}" class="bg-gray-700 p-2 rounded-md border border-gray-600 w-full"></div>
+                            <div><label for="admin-address" class="block text-sm font-medium text-gray-300 mb-1">Endereço da Loja</label><input type="text" id="admin-address" value="${adminSettings.address}" class="bg-gray-700 p-2 rounded-md border border-gray-600 w-full"></div>
+                        </div>
+                    </div>
+                    <div class="p-4 bg-gray-900/50 rounded-lg">
+                        <h4 class="text-xl font-bold text-purple-400 mb-4">Controle de Funcionamento</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                            <div>
+                                <h5 class="font-semibold text-gray-300 mb-2">Status da Loja</h5>
+                                <div class="space-y-2">
+                                    <label class="flex items-center p-2 rounded-md hover:bg-gray-700 cursor-pointer"><input type="radio" name="admin_store_status" value="auto" class="h-4 w-4 mr-2 text-purple-600" ${adminSettings.storeStatus === 'auto' ? 'checked' : ''}> Automático</label>
+                                    <label class="flex items-center p-2 rounded-md hover:bg-gray-700 cursor-pointer"><input type="radio" name="admin_store_status" value="open" class="h-4 w-4 mr-2 text-purple-600" ${adminSettings.storeStatus === 'open' ? 'checked' : ''}> Aberto (Manual)</label>
+                                    <label class="flex items-center p-2 rounded-md hover:bg-gray-700 cursor-pointer"><input type="radio" name="admin_store_status" value="closed" class="h-4 w-4 mr-2 text-purple-600" ${adminSettings.storeStatus === 'closed' ? 'checked' : ''}> Fechado (Manual)</label>
+                                </div>
+                            </div>
+                            <div>
+                                <h5 class="font-semibold text-gray-300 mb-2">Opções de Pedido</h5>
+                                <div class="space-y-2">
+                                    <label class="flex items-center p-2 rounded-md hover:bg-gray-700 cursor-pointer"><input type="radio" name="admin_delivery_mode" value="both" class="h-4 w-4 mr-2 text-purple-600" ${adminSettings.deliveryMode === 'both' ? 'checked' : ''}> Delivery e Retirada</label>
+                                    <label class="flex items-center p-2 rounded-md hover:bg-gray-700 cursor-pointer"><input type="radio" name="admin_delivery_mode" value="delivery" class="h-4 w-4 mr-2 text-purple-600" ${adminSettings.deliveryMode === 'delivery' ? 'checked' : ''}> Apenas Delivery</label>
+                                    <label class="flex items-center p-2 rounded-md hover:bg-gray-700 cursor-pointer"><input type="radio" name="admin_delivery_mode" value="takeout" class="h-4 w-4 mr-2 text-purple-600" ${adminSettings.deliveryMode === 'takeout' ? 'checked' : ''}> Apenas Retirada</label>
+                                </div>
+                            </div>
+                            <div class="md:col-span-2">
+                                <h5 class="font-semibold text-gray-300 mb-2">Horário (Modo Automático)</h5>
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                    <div class="sm:col-span-2">
+                                        <h6 class="text-sm font-medium text-gray-400 mb-1">Dias da Semana</h6>
+                                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-4 gap-y-2 text-sm">${daysOfWeek.map((day, index) => `<label class="flex items-center gap-2 p-1.5 rounded-md hover:bg-gray-700 cursor-pointer"><input type="checkbox" name="admin_open_day" value="${index}" class="h-4 w-4 rounded text-purple-600" ${adminSettings.openDays.includes(index) ? 'checked' : ''}><span>${day}</span></label>`).join('')}</div>
+                                    </div>
+                                    <div>
+                                        <h6 class="text-sm font-medium text-gray-400 mb-1">Horário</h6>
+                                        <div class="flex items-center gap-2">
+                                            <input type="time" id="admin-opening-time" value="${adminSettings.openingTime}" class="bg-gray-700 p-2 rounded-md border border-gray-600 w-full">
+                                            <span>às</span>
+                                            <input type="time" id="admin-closing-time" value="${adminSettings.closingTime}" class="bg-gray-700 p-2 rounded-md border border-gray-600 w-full">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+
+            adminBody.innerHTML = financialContent + menuContent + settingsContent;
+            this.updateAdminTabs();
+        },
+        
+        getFinancialPanelHTML(orders) {
+            if (!orders) return '<div id="admin-financial-content" class="admin-tab-content active"><p>A carregar relatórios...</p></div>';
+
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
+            startOfWeek.setHours(0, 0, 0, 0);
+            const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+            let dailySales = 0;
+            let weeklySales = 0;
+            let monthlySales = 0;
+            const paymentMethods = {};
+
+            orders.forEach(order => {
+                const orderDate = order.timestamp.toDate();
+                if (orderDate >= today) {
+                    dailySales += order.total;
+                }
+                if (orderDate >= startOfWeek) {
+                    weeklySales += order.total;
+                }
+                if (orderDate >= startOfMonth) {
+                    monthlySales += order.total;
+                }
+                
+                const method = order.paymentMethod;
+                if (!paymentMethods[method]) {
+                    paymentMethods[method] = { count: 0, total: 0 };
+                }
+                paymentMethods[method].count++;
+                paymentMethods[method].total += order.total;
+            });
+
+            let paymentHTML = Object.keys(paymentMethods).length > 0 
+                ? Object.entries(paymentMethods).map(([method, data]) => `
+                    <li class="flex justify-between items-center p-3 bg-gray-700/50 rounded-lg">
+                        <div>
+                            <i class="fas fa-credit-card mr-2 text-purple-400"></i>
+                            <span class="font-semibold">${method}</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-400">${data.count} venda(s)</span>
+                            <span class="font-bold text-lg ml-4">${this.formatCurrency(data.total)}</span>
+                        </div>
+                    </li>
+                `).join('')
+                : '<li>Nenhuma venda registada.</li>';
+
+            return `
+                <div id="admin-financial-content" class="admin-tab-content active space-y-6">
+                    <div>
+                        <h4 class="text-xl font-bold text-purple-400 mb-4">Resumo de Vendas</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="bg-gray-900/50 p-4 rounded-lg text-center">
+                                <p class="text-sm text-gray-400 flex items-center justify-center gap-2"><i class="fas fa-calendar-day"></i>Vendas Hoje</p>
+                                <p class="text-3xl font-bold text-green-400 mt-1">${this.formatCurrency(dailySales)}</p>
+                            </div>
+                            <div class="bg-gray-900/50 p-4 rounded-lg text-center">
+                                <p class="text-sm text-gray-400 flex items-center justify-center gap-2"><i class="fas fa-calendar-week"></i>Vendas na Semana</p>
+                                <p class="text-3xl font-bold text-green-400 mt-1">${this.formatCurrency(weeklySales)}</p>
+                            </div>
+                            <div class="bg-gray-900/50 p-4 rounded-lg text-center">
+                                <p class="text-sm text-gray-400 flex items-center justify-center gap-2"><i class="fas fa-calendar-alt"></i>Vendas no Mês</p>
+                                <p class="text-3xl font-bold text-green-400 mt-1">${this.formatCurrency(monthlySales)}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="text-xl font-bold text-purple-400 mb-4">Formas de Pagamento</h4>
+                        <ul class="space-y-2">${paymentHTML}</ul>
+                    </div>
+                </div>`;
         },
 
-        // Gera o HTML para um item no painel de admin
         getAdminItemHTML(type, item, categoryKey = '') {
             if (type === 'product') {
                 return `<div class="grid grid-cols-1 md:grid-cols-4 gap-3 items-center p-2 bg-gray-700 rounded-md admin-item" data-type="product">
@@ -783,6 +918,15 @@
                 </div>`;
             }
         },
+
+        updateAdminTabs(activeTab = 'financeiro') {
+            document.querySelectorAll('.admin-tab').forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.tab === activeTab);
+            });
+            document.querySelectorAll('.admin-tab-content').forEach(content => {
+                content.classList.toggle('active', content.id.includes(activeTab));
+            });
+        }
     };
 
 
@@ -791,64 +935,48 @@
     // =================================================================================
 
     const App = {
-        // Estado da aplicação
         state: {
-            cart: [],
-            currentItem: null,
-            whatsAppMessage: '',
-            isStoreOpen: false,
-            adminSettings: {},
-            products: [],
-            toppings: {},
+            cart: [], currentItem: null, whatsAppMessage: '', isStoreOpen: false,
+            adminSettings: {}, products: [], toppings: {}, orders: []
         },
 
-        // Ponto de entrada da aplicação
         async init() {
-            // CORRIGIDO: Inicializa a UI primeiro para garantir que os elementos existem
             UI.init();
-            
-            // 1. Inicializar Firebase
-            if (!FirebaseService.init()) return; // Aborta se o Firebase falhar
+            if (!FirebaseService.init()) return;
 
-            // 2. Carregar todos os dados (Firestore e LocalStorage)
-            const firestoreData = await FirebaseService.loadAllData();
-            this.state.adminSettings = firestoreData.adminSettings;
-            this.state.products = firestoreData.products;
-            this.state.toppings = firestoreData.toppings;
+            const configData = await FirebaseService.loadAllData();
+            this.state.adminSettings = configData.adminSettings;
+            this.state.products = configData.products;
+            this.state.toppings = configData.toppings;
+            
             this.loadCartFromStorage();
             this.loadCustomerInfoFromStorage();
-
-            // 3. Configurar e adicionar os event listeners
             this.initEventListeners();
-
-            // 4. Renderizar a UI inicial
             this.updateFullUI();
         },
 
-        // Atualiza toda a UI com base no estado atual
         updateFullUI() {
             this.checkStoreStatus();
             UI.updateStoreStatus(this.state.isStoreOpen, this.state.adminSettings);
-            UI.elements.storeAddressDisplay.textContent = this.state.adminSettings.address;
-            UI.elements.whatsappLink.href = `https://wa.me/${this.state.adminSettings.whatsappNumber}`;
+            if(UI.elements.storeAddressDisplay) UI.elements.storeAddressDisplay.textContent = this.state.adminSettings.address;
+            if(UI.elements.whatsappLink) UI.elements.whatsappLink.href = `https://wa.me/${this.state.adminSettings.whatsappNumber}`;
             UI.renderProducts(this.state.products, this.state.isStoreOpen);
             this.renderCart();
             this.renderDeliveryOptions();
         },
 
-        // Adiciona todos os event listeners da aplicação
         initEventListeners() {
-            // Event delegation para cliques em elementos dinâmicos
             document.body.addEventListener('click', (e) => {
                 const target = e.target;
                 const productCard = target.closest('[data-product-id]');
                 const actionButton = target.closest('[data-action]');
+                const adminTab = target.closest('.admin-tab');
 
                 if (productCard) {
                     this.handleOpenItemModal(productCard.dataset.productId);
                 } else if (actionButton) {
                     const { action, index, type, category } = actionButton.dataset;
-                    e.preventDefault(); // Previne comportamento padrão
+                    e.preventDefault();
                     switch (action) {
                         case 'decrease-quantity': this.updateQuantity(index, -1); break;
                         case 'increase-quantity': this.updateQuantity(index, 1); break;
@@ -856,32 +984,29 @@
                         case 'add-admin-item': this.addAdminItem(type, category); break;
                         case 'remove-admin-item': actionButton.closest('.admin-item').remove(); break;
                     }
+                } else if (adminTab) {
+                    UI.updateAdminTabs(adminTab.dataset.tab);
                 }
             });
 
-            // Listeners para modais e botões estáticos
-            UI.elements.closeAlertModalBtn.addEventListener('click', () => UI.closeAlertModal());
-            UI.elements.adminPanelBtn.addEventListener('click', () => UI.toggleModal(UI.elements.passwordModal, true));
-            UI.elements.cancelPasswordBtn.addEventListener('click', () => UI.toggleModal(UI.elements.passwordModal, false));
-            UI.elements.checkPasswordBtn.addEventListener('click', () => this.checkAdminPassword());
-            UI.elements.adminPasswordInput.addEventListener('keypress', (e) => e.key === 'Enter' && this.checkAdminPassword());
-            UI.elements.closeAdminModalBtn.addEventListener('click', () => UI.toggleModal(UI.elements.adminModal, false));
+            Object.values(UI.elements).forEach(element => {
+                if (element && element.id) {
+                    const id = element.id;
+                    if (id.startsWith('close-') || id.startsWith('cancel-')) {
+                        element.addEventListener('click', () => UI.toggleModal(document.getElementById(id.replace('close-', '').replace('cancel-', '')), false));
+                    }
+                }
+            });
+
+            UI.elements.checkPasswordBtn.addEventListener('click', () => this.openAdminPanel());
+            UI.elements.adminPasswordInput.addEventListener('keypress', (e) => e.key === 'Enter' && this.openAdminPanel());
             UI.elements.saveAdminChangesBtn.addEventListener('click', () => this.saveAdminChanges());
             UI.elements.resetToDefaultsBtn.addEventListener('click', () => this.resetToDefaults());
             UI.elements.toggleCartBtn.addEventListener('click', () => this.toggleCartModal());
-            UI.elements.closeCartModalBtn.addEventListener('click', () => this.toggleCartModal());
-            UI.elements.closeItemModalBtn.addEventListener('click', () => UI.toggleModal(UI.elements.itemModal, false));
             UI.elements.addToCartBtn.addEventListener('click', () => this.addToCart());
             UI.elements.finalizeOrderBtn.addEventListener('click', () => this.finalizeOrder());
-            
-            // Listeners para o modal de confirmação
-            const closeConfirmation = () => UI.toggleModal(UI.elements.confirmationModal, false);
-            UI.elements.closeConfirmationModalBtn.addEventListener('click', closeConfirmation);
-            UI.elements.closeConfirmationModalBtn2.addEventListener('click', closeConfirmation);
             UI.elements.sendWhatsappBtn.addEventListener('click', () => this.sendOrderViaWhatsApp());
             UI.elements.confirmOrderSentBtn.addEventListener('click', () => this.confirmOrderSent());
-
-            // Listeners para inputs do formulário
             UI.elements.customerNameInput.addEventListener('input', () => this.saveCustomerInfoToStorage());
             UI.elements.customerAddressInput.addEventListener('input', () => this.saveCustomerInfoToStorage());
             UI.elements.neighborhoodSelect.addEventListener('change', () => {
@@ -894,16 +1019,10 @@
                     this.saveCustomerInfoToStorage();
                 });
             });
-            
-            // Listener para checkboxes no modal de item
             UI.elements.modalBody.addEventListener('change', (e) => {
-                if (e.target.type === 'checkbox') {
-                    this.updateModalItemTotal();
-                }
+                if (e.target.type === 'checkbox') this.updateModalItemTotal();
             });
         },
-        
-        // --- LÓGICA DE ESTADO E DADOS ---
         
         loadCartFromStorage() { this.state.cart = JSON.parse(localStorage.getItem(CART_STORAGE_KEY)) || []; },
         saveCartToStorage() { localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(this.state.cart)); },
@@ -928,8 +1047,6 @@
             localStorage.setItem(CUSTOMER_INFO_STORAGE_KEY, JSON.stringify(info));
         },
         
-        // --- LÓGICA DO CARRINHO ---
-
         addToCart() {
             const { currentItem, cart } = this.state;
             if (!currentItem) return;
@@ -987,7 +1104,6 @@
             UI.toggleModal(UI.elements.cartModal, isHidden);
         },
 
-        // --- LÓGICA DE FUNCIONAMENTO DA LOJA ---
         checkStoreStatus() {
             const { storeStatus, openDays, openingTime, closingTime } = this.state.adminSettings;
             if (storeStatus === 'open') { this.state.isStoreOpen = true; return; }
@@ -1005,7 +1121,6 @@
             this.state.isStoreOpen = (currentTime >= openTime && currentTime <= closeTime);
         },
 
-        // --- LÓGICA DE CUSTOMIZAÇÃO DE ITENS ---
         handleOpenItemModal(productId) {
             if (!this.state.isStoreOpen) {
                 UI.showAlert('A loja está fechada e não é possível montar pedidos agora.', 'Loja Fechada', true);
@@ -1029,7 +1144,6 @@
             this.state.currentItem.toppings = toppings;
         },
 
-        // --- LÓGICA DE FINALIZAÇÃO DE PEDIDO ---
         finalizeOrder() {
             if (!this.state.isStoreOpen) { UI.showAlert('A loja está fechada.', 'Loja Fechada', true); return; }
             if (this.state.cart.length === 0) { UI.showAlert('Seu carrinho está vazio!', 'Carrinho Vazio', true); return; }
@@ -1087,24 +1201,46 @@
             UI.elements.postSendButtons.classList.add('flex');
         },
 
-        confirmOrderSent() {
-            this.state.cart = [];
-            this.saveCartToStorage();
-            UI.toggleModal(UI.elements.confirmationModal, false);
-            this.renderCart();
-            UI.showAlert('Ótimo! Seu carrinho foi limpo.', 'Pedido Enviado');
+        async confirmOrderSent() {
+            const deliveryOption = document.querySelector('input[name="delivery_option"]:checked')?.value;
+            const selectedOption = UI.elements.neighborhoodSelect.options[UI.elements.neighborhoodSelect.selectedIndex];
+            const deliveryFee = deliveryOption === 'delivery' ? parseFloat(selectedOption.dataset.fee || 0) : 0;
+            const subtotal = this.state.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            
+            const orderData = {
+                items: this.state.cart,
+                total: subtotal + deliveryFee,
+                paymentMethod: document.getElementById('payment-method').value,
+                customerName: UI.elements.customerNameInput.value.trim(),
+                deliveryOption: deliveryOption,
+                timestamp: serverTimestamp()
+            };
+
+            const saved = await FirebaseService.saveOrder(orderData);
+            if (saved) {
+                this.state.cart = [];
+                this.saveCartToStorage();
+                UI.toggleModal(UI.elements.confirmationModal, false);
+                this.renderCart();
+                UI.showAlert('Ótimo! Seu pedido foi registado e o carrinho foi limpo.', 'Pedido Enviado');
+            }
         },
         
-        // --- LÓGICA DO PAINEL DE ADMINISTRAÇÃO ---
-        checkAdminPassword() {
+        async openAdminPanel() {
             if (UI.elements.adminPasswordInput.value === "admin123") {
                 UI.toggleModal(UI.elements.passwordModal, false);
-                UI.renderAdminPanel(this.state.adminSettings, this.state.products, this.state.toppings);
+                UI.elements.adminPasswordInput.value = '';
+                
+                UI.elements.adminBody.innerHTML = '<p>A carregar relatórios...</p>';
                 UI.toggleModal(UI.elements.adminModal, true);
+
+                this.state.orders = await FirebaseService.loadOrders();
+                
+                UI.renderAdminPanel(this.state.adminSettings, this.state.products, this.state.toppings, this.state.orders);
             } else {
                 UI.showAlert("Senha incorreta!", 'Acesso Negado', true);
+                UI.elements.adminPasswordInput.value = '';
             }
-            UI.elements.adminPasswordInput.value = '';
         },
 
         async saveAdminChanges() {
@@ -1134,11 +1270,13 @@
                 newToppings[key] = { ...newToppings[key], items };
             });
 
-            const success = await FirebaseService.saveAllData({ adminSettings: newAdminSettings, products: newProducts, toppings: newToppings });
+            const success = await FirebaseService.saveAllAdminData({ adminSettings: newAdminSettings, products: newProducts, toppings: newToppings });
             if (success) {
+                this.state.adminSettings = newAdminSettings;
+                this.state.products = newProducts;
+                this.state.toppings = newToppings;
                 UI.showAlert('Configurações salvas na base de dados!', 'Salvo!', false);
-                UI.toggleModal(UI.elements.adminModal, false);
-                await this.init(); // Recarrega tudo
+                this.updateFullUI();
             }
         },
 
@@ -1146,7 +1284,7 @@
             UI.showConfirmationModal(
                 "Tem certeza que deseja restaurar tudo para os valores padrão? As alterações serão salvas na base de dados.",
                 async () => {
-                    const success = await FirebaseService.saveAllData({ adminSettings: defaultAdminSettings, products: defaultProducts, toppings: defaultToppings });
+                    const success = await FirebaseService.saveAllAdminData({ adminSettings: defaultAdminSettings, products: defaultProducts, toppings: defaultToppings });
                     if (success) {
                         UI.showAlert('Configurações restauradas! A página será recarregada.', 'Sucesso', false);
                         setTimeout(() => window.location.reload(), 2500);
@@ -1162,36 +1300,37 @@
             document.getElementById(containerId).insertAdjacentHTML('beforeend', newItemHTML);
         },
 
-        // --- LÓGICA DE OPÇÕES DE ENTREGA ---
         renderDeliveryOptions() {
             const { deliveryMode } = this.state.adminSettings;
-            const deliveryLabel = UI.elements.deliveryOptionDelivery;
-            const takeoutLabel = UI.elements.deliveryOptionTakeout;
+            const { deliveryOptionDelivery, deliveryOptionTakeout } = UI.elements;
             const deliveryOptionsContainer = document.getElementById('delivery-options');
             
+            if (!deliveryOptionDelivery || !deliveryOptionTakeout || !deliveryOptionsContainer) return;
+
             const showDelivery = deliveryMode === 'both' || deliveryMode === 'delivery';
             const showTakeout = deliveryMode === 'both' || deliveryMode === 'takeout';
 
-            deliveryLabel.classList.toggle('hidden', !showDelivery);
-            takeoutLabel.classList.toggle('hidden', !showTakeout);
+            deliveryOptionDelivery.classList.toggle('hidden', !showDelivery);
+            deliveryOptionTakeout.classList.toggle('hidden', !showTakeout);
             deliveryOptionsContainer.classList.toggle('hidden', !showDelivery && !showTakeout);
 
             const currentSelected = document.querySelector('input[name="delivery_option"]:checked');
             if (!currentSelected || currentSelected.closest('label').classList.contains('hidden')) {
-                if (showDelivery) deliveryLabel.querySelector('input').checked = true;
-                else if (showTakeout) takeoutLabel.querySelector('input').checked = true;
+                if (showDelivery) deliveryOptionDelivery.querySelector('input').checked = true;
+                else if (showTakeout) deliveryOptionTakeout.querySelector('input').checked = true;
             }
             this.toggleDeliveryFields();
         },
 
         toggleDeliveryFields() {
             const deliveryOption = document.querySelector('input[name="delivery_option"]:checked')?.value;
-            UI.elements.deliveryFields.classList.toggle('hidden', deliveryOption === 'takeout' || !deliveryOption);
+            if (UI.elements.deliveryFields) {
+                UI.elements.deliveryFields.classList.toggle('hidden', deliveryOption === 'takeout' || !deliveryOption);
+            }
             this.renderCart();
         }
     };
 
-    // Inicia a aplicação quando o DOM estiver pronto
     document.addEventListener('DOMContentLoaded', () => App.init());
 
     </script>
