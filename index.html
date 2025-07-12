@@ -4,81 +4,80 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pedido Online - SABOR AÇAÍTERIA</title>
-    <!-- Tailwind CSS -->
+    <!-- Tailwind CSS CDN for utility-first styling -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts: Inter -->
+    <!-- Google Fonts - Inter for a modern, clean look -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
+        /* Base font for the entire body */
         body {
             font-family: 'Inter', sans-serif;
         }
+        /* Custom scrollbar for modal content to improve aesthetics on dark background */
         .modal-body::-webkit-scrollbar {
             width: 8px;
         }
         .modal-body::-webkit-scrollbar-track {
-            background: #1f2937;
+            background: #1f2937; /* Dark gray for track */
             border-radius: 10px;
         }
         .modal-body::-webkit-scrollbar-thumb {
-            background: #581c87;
+            background: #581c87; /* Purple for thumb */
             border-radius: 10px;
         }
         .modal-body::-webkit-scrollbar-thumb:hover {
-            background: #6b21a8;
+            background: #6b21a8; /* Darker purple on hover */
         }
+        /* Hide spin buttons for number inputs to ensure a cleaner look */
         input[type=number]::-webkit-inner-spin-button,
         input[type=number]::-webkit-outer-spin-button {
             -webkit-appearance: none;
             margin: 0;
         }
         input[type=number] {
-            -moz-appearance: textfield;
+            -moz-appearance: textfield; /* Firefox compatibility */
         }
+        /* Style for disabled checkboxes to visually indicate they are not selectable */
         input[type="checkbox"]:disabled + span {
-            color: #6b7280;
+            color: #6b7280; /* Gray out text */
             cursor: not-allowed;
         }
+        /* Transition for alert modal for a smooth appearance/disappearance */
         .alert-modal {
             transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
         }
+        /* Highlight radio button title when checked for better visual feedback */
         input[type="radio"]:checked + div > .radio-title {
-            color: #c084fc;
+            color: #c084fc; /* Light purple */
         }
+        /* Custom style for time input icon to make it visible on dark background */
         input[type="time"]::-webkit-calendar-picker-indicator {
-            filter: invert(0.8);
+            filter: invert(0.8); /* Invert colors to make it lighter */
         }
-        /* Styles for admin panel tabs */
-        .admin-tab {
-            cursor: pointer;
-            padding: 0.75rem 1.5rem;
-            border-bottom: 3px solid transparent;
-            transition: all 0.2s ease-in-out;
+        /* Base styles for modals to enable transitions */
+        .modal {
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+            opacity: 0;
+            transform: scale(0.95);
+            pointer-events: none; /* Disable interaction when hidden */
         }
-        .admin-tab.active {
-            color: #c084fc; /* purple-400 */
-            border-bottom-color: #c084fc;
-        }
-        .admin-tab-content {
-            display: none;
-        }
-        .admin-tab-content.active {
-            display: block;
+        /* Active state for modals, making them visible and interactive */
+        .modal.flex {
+            opacity: 1;
+            transform: scale(1);
+            pointer-events: auto; /* Enable interaction when visible */
         }
     </style>
 </head>
 <body class="bg-gray-900 text-gray-300">
 
-    <div id="loading-overlay" class="fixed inset-0 bg-gray-900 z-[100] flex flex-col items-center justify-center">
-        <div class="text-amber-400 text-3xl font-black">SABOR AÇAÍTERIA</div>
-        <div class="mt-4 text-gray-400">Carregando cardápio...</div>
-    </div>
-
     <div class="container mx-auto p-4 sm:p-8 max-w-4xl">
-        <!-- Header Section -->
+
+        <!-- Header Section: Displays store name, motto, and dynamic operating hours/status -->
         <header class="text-center mb-8 p-6 rounded-2xl bg-gradient-to-tr from-black to-gray-800 text-white shadow-lg">
             <h1 class="text-5xl md:text-6xl font-black tracking-tight text-amber-400">SABOR AÇAÍTERIA</h1>
             <p class="text-lg md:text-xl mt-2 text-gray-300 opacity-90">Monte seu pedido online de forma fácil e rápida!</p>
@@ -88,20 +87,21 @@
             </p>
         </header>
 
-        <!-- Store Status Banner -->
+        <!-- Store Status and Delivery Time Banners: Dynamically displayed based on store hours and admin settings -->
         <div id="store-status-banner" class="hidden"></div>
+        <div id="delivery-time-banner" class="hidden"></div>
 
+        <!-- Main Content Area - Product List: Displays available product sizes -->
         <main class="space-y-8">
-            <!-- Products Section -->
             <section id="tamanhos" class="bg-gray-800 p-6 rounded-2xl shadow-md">
                 <h2 class="text-3xl font-bold text-purple-400 mb-4 border-b-2 border-purple-800 pb-2">Escolha o Tamanho</h2>
                 <div id="product-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <!-- Products will be dynamically injected by JavaScript -->
+                    <!-- Product cards will be rendered here by JavaScript -->
                 </div>
             </section>
         </main>
 
-        <!-- Footer -->
+        <!-- Footer Section: Contains store address, social media link, and admin panel access -->
         <footer class="text-center mt-10 space-y-4">
             <div class="bg-gray-800 p-4 rounded-2xl shadow-md border-2 border-gray-700">
                  <h3 class="text-lg font-bold text-purple-400 mb-2 flex items-center justify-center gap-2">
@@ -114,42 +114,41 @@
             </div>
             <div class="text-gray-400 pt-2">
                 <p>Siga-nos no Instagram: 
-                    <a href="https://www.instagram.com/sabor_acaiteria_delivery/profilecard/?igsh=NjF2ZWMwNHNiNzI0" target="_blank" class="font-semibold text-purple-400 hover:underline">@sabor_acaiteria_delivery</a>
+                    <a href="https://www.instagram.com/sabor_acaiteria/profilecard/?igsh=NjF2ZWMwNHNiNzI0" target="_blank" class="font-semibold text-purple-400 hover:underline">@sabor_acaiteria</a>
                 </p>
             </div>
-            <!-- Admin Panel Button -->
             <div class="mt-6">
-                 <a href="#" id="admin-panel-btn" class="inline-block bg-amber-400 text-gray-900 font-bold py-3 px-6 rounded-lg hover:bg-amber-500 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                 <a href="#" onclick="app.openAdminPanel(event)" class="inline-block bg-amber-400 text-gray-900 font-bold py-3 px-6 rounded-lg hover:bg-amber-500 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
                     <i class="fas fa-user-shield mr-2"></i>Painel do Administrador
                 </a>
             </div>
         </footer>
     </div>
 
-    <!-- Floating WhatsApp Button -->
+    <!-- WhatsApp Floating Button: Allows quick access to WhatsApp contact -->
     <a id="whatsapp-link" href="#" target="_blank" class="fixed bottom-5 left-5 z-50">
         <button class="bg-green-500 text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center hover:bg-green-600 transition-transform transform hover:scale-110">
             <i class="fab fa-whatsapp text-3xl"></i>
         </button>
     </a>
 
-    <!-- Floating Cart Button -->
+    <!-- Cart Floating Button: Displays item count and opens the cart modal -->
     <div id="cart-button" class="fixed bottom-5 right-5 z-50 hidden">
-        <button id="toggle-cart-btn" class="bg-purple-600 text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center hover:bg-purple-700 transition-transform transform hover:scale-110">
+        <button onclick="app.toggleCartModal()" class="bg-purple-600 text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center hover:bg-purple-700 transition-transform transform hover:scale-110">
             <i class="fas fa-shopping-cart text-2xl"></i>
             <span id="cart-count" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center">0</span>
         </button>
     </div>
 
-    <!-- Item Customization Modal -->
-    <div id="item-modal" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden items-center justify-center p-4">
+    <!-- Item Customization Modal: For selecting toppings and customizing a product -->
+    <div id="item-modal" class="modal fixed inset-0 bg-black bg-opacity-60 z-50 hidden items-center justify-center p-4">
         <div class="bg-gray-800 text-gray-200 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
             <div class="p-4 border-b border-gray-700 flex justify-between items-center">
                 <h3 id="modal-title" class="text-2xl font-bold text-purple-400">Monte seu Açaí</h3>
-                <button id="close-item-modal-btn" class="text-gray-400 hover:text-red-500"><i class="fas fa-times text-2xl"></i></button>
+                <button onclick="app.closeItemModal()" class="text-gray-400 hover:text-red-500"><i class="fas fa-times text-2xl"></i></button>
             </div>
             <div id="modal-body" class="p-6 space-y-6 overflow-y-auto modal-body">
-                <!-- Toppings will be dynamically injected by JavaScript -->
+                <!-- Topping options will be rendered here by JavaScript -->
             </div>
             <div class="p-4 bg-gray-900 border-t border-gray-700 flex justify-between items-center">
                 <div>
@@ -163,12 +162,12 @@
         </div>
     </div>
 
-    <!-- Cart and Checkout Modal -->
-    <div id="cart-modal" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden items-center justify-center p-4">
+    <!-- Cart Modal: Displays cart items, order summary, and checkout form -->
+    <div id="cart-modal" class="modal fixed inset-0 bg-black bg-opacity-60 z-50 hidden items-center justify-center p-4">
          <div class="bg-gray-800 text-gray-200 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col">
             <div class="p-4 border-b border-gray-700 flex justify-between items-center">
                 <h3 class="text-2xl font-bold text-purple-400">Seu Carrinho e Pedido</h3>
-                <button id="close-cart-modal-btn" class="text-gray-400 hover:text-red-500"><i class="fas fa-times text-2xl"></i></button>
+                <button onclick="app.toggleCartModal()" class="text-gray-400 hover:text-red-500"><i class="fas fa-times text-2xl"></i></button>
             </div>
             <div class="p-6 space-y-6 overflow-y-auto modal-body">
                 <div id="cart-items-container"></div>
@@ -186,6 +185,7 @@
                     <h4 class="text-xl font-bold text-gray-200">Informações do Pedido</h4>
                     <div id="delivery-options">
                         <div class="flex flex-col sm:flex-row gap-4">
+                            <!-- Delivery Option Radio Button -->
                             <label id="delivery-option-delivery" class="flex-1 flex items-center p-3 border-2 border-gray-600 rounded-lg cursor-pointer has-[:checked]:border-purple-500 has-[:checked]:bg-purple-900/50">
                                 <input type="radio" name="delivery_option" value="delivery" class="hidden" checked>
                                 <div class="flex items-center">
@@ -193,6 +193,7 @@
                                     <div><span class="font-semibold text-gray-300 block radio-title">Delivery (Entrega)</span><span class="text-sm text-gray-500">20-60 min</span></div>
                                 </div>
                             </label>
+                            <!-- Takeout Option Radio Button -->
                             <label id="delivery-option-takeout" class="flex-1 flex items-center p-3 border-2 border-gray-600 rounded-lg cursor-pointer has-[:checked]:border-purple-500 has-[:checked]:bg-purple-900/50">
                                 <input type="radio" name="delivery_option" value="takeout" class="hidden">
                                 <div class="flex items-center">
@@ -202,22 +203,26 @@
                             </label>
                         </div>
                     </div>
+                    <!-- Customer Name Input -->
                     <div>
                         <label for="customer-name" class="block text-sm font-medium text-gray-400">Seu Nome</label>
                         <input type="text" id="customer-name" class="mt-1 block w-full bg-gray-700 border-2 border-gray-600 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 p-3 text-base" required>
                     </div>
+                    <!-- Delivery Fields (Address and Neighborhood) - hidden if takeout is selected -->
                     <div id="delivery-fields" class="space-y-4">
                          <div>
                             <label for="neighborhood" class="block text-sm font-medium text-gray-400">Selecione o Bairro</label>
                             <select id="neighborhood" class="mt-1 block w-full bg-gray-700 border-2 border-gray-600 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 p-3 text-base">
                                 <option value="" data-fee="0">-- Escolha uma opção --</option>
-                                <option value="Jardim Europa" data-fee="7.00">Jardim Europa (R$ 7,00)</option>
-                                <option value="Amec" data-fee="7.00">Amec (R$ 7,00)</option>
-                                <option value="Vale dos Sonhos 1 e 2" data-fee="8.00">Vale dos Sonhos 1 e 2 (R$ 8,00)</option>
-                                <option value="Jardim do Lago" data-fee="8.00">Jardim do Lago (R$ 8,00)</option>
+                                <option value="Jardim Europa" data-fee="9.00">Jardim Europa (R$ 9,00)</option>
+                                <option value="Amec" data-fee="9.00">Amec (R$ 9,00)</option>
+                                <option value="Vale dos Sonhos 1" data-fee="9.00">Vale dos Sonhos 1 (R$ 9,00)</option>
+                                <option value="Vale dos Sonhos 2" data-fee="9.00">Vale dos Sonhos 2 (R$ 9,00)</option>
+                                <option value="Vale da Benção" data-fee="9.00">Vale da Benção (R$ 9,00)</option>
+                                <option value="Jardim do Lago" data-fee="12.00">Jardim do Lago (R$ 12,00)</option>
                                 <option value="Casas Populares" data-fee="9.00">Casas Populares (R$ 9,00)</option>
                                 <option value="Nova Esperança 2" data-fee="9.00">Nova Esperança 2 (R$ 9,00)</option>
-                                <option value="Outro Bairro" data-fee="6.00">Outro Bairro (Taxa Padrão R$ 6,00)</option>
+                                <option value="Outro Bairro" data-fee="7.00">Outro Bairro (Taxa Padrão R$ 7,00)</option>
                             </select>
                         </div>
                         <div>
@@ -225,6 +230,7 @@
                             <input type="text" id="customer-address" class="mt-1 block w-full bg-gray-700 border-2 border-gray-600 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 p-3 text-base" placeholder="Ex: Rua das Flores, 123, apt 4" required>
                         </div>
                     </div>
+                     <!-- Payment Method Selection -->
                      <div>
                         <label for="payment-method" class="block text-sm font-medium text-gray-400">Forma de Pagamento</label>
                         <select id="payment-method" class="mt-1 block w-full bg-gray-700 border-2 border-gray-600 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 p-3 text-base">
@@ -235,6 +241,7 @@
                         </select>
                         <p class="text-xs text-yellow-400 mt-2"><i class="fas fa-info-circle mr-1"></i>Observação: não aceitamos VR e vales refeição no momento.</p>
                     </div>
+                     <!-- Observations Textarea -->
                      <div>
                         <label for="observations" class="block text-sm font-medium text-gray-400">Observações</label>
                         <textarea id="observations" rows="3" class="mt-1 block w-full bg-gray-700 border-2 border-gray-600 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 p-3 text-base" placeholder="Ex: Troco para R$50, sem cebola, etc."></textarea>
@@ -246,76 +253,62 @@
                     <span class="text-lg font-medium text-gray-300">Total do Pedido:</span>
                     <span id="cart-total" class="text-2xl font-bold text-purple-400 ml-2">R$ 0,00</span>
                 </div>
-                <button id="finalize-order-btn" class="bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 transition-all flex items-center gap-2">
+                <button onclick="app.finalizeOrder()" class="bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 transition-all flex items-center gap-2">
                     <i class="fab fa-whatsapp"></i> Finalizar Pedido
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Confirmation Modal -->
-    <div id="confirmation-modal" class="fixed inset-0 bg-black bg-opacity-70 z-50 hidden items-center justify-center p-4">
+    <!-- Confirmation Modal: Displays order summary before sending to WhatsApp -->
+    <div id="confirmation-modal" class="modal fixed inset-0 bg-black bg-opacity-70 z-50 hidden items-center justify-center p-4">
         <div class="bg-gray-800 text-gray-200 rounded-2xl shadow-2xl w-full max-w-lg text-center p-8">
             <div id="confirmation-icon"><i class="fas fa-check-circle text-green-500 text-6xl mb-4"></i></div>
             <h3 id="confirmation-title" class="text-2xl font-bold text-gray-100 mb-2">Pedido Recebido!</h3>
             <p id="confirmation-message" class="text-gray-400 mb-6">Seu resumo está pronto. Clique no botão para enviar via WhatsApp e concluir seu pedido!</p>
             <div id="order-summary" class="text-left bg-gray-700 p-4 rounded-lg mb-6 max-h-60 overflow-y-auto modal-body"></div>
             <div id="initial-confirm-buttons" class="flex flex-col sm:flex-row gap-4 justify-center">
-                 <button id="send-whatsapp-btn" class="w-full bg-green-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-600 transition-all flex items-center justify-center gap-2">
+                 <button onclick="app.sendOrderViaWhatsApp()" class="w-full bg-green-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-600 transition-all flex items-center justify-center gap-2">
                     <i class="fab fa-whatsapp"></i> Enviar Pedido
                 </button>
-                <button id="close-confirmation-modal-btn" class="w-full bg-gray-600 text-gray-100 font-bold py-3 px-6 rounded-lg hover:bg-gray-500 transition-all">Fechar</button>
+                <button onclick="app.closeConfirmationModal()" class="w-full bg-gray-600 text-gray-100 font-bold py-3 px-6 rounded-lg hover:bg-gray-500 transition-all">Fechar</button>
             </div>
             <div id="post-send-buttons" class="hidden flex-col gap-4 justify-center">
                  <p class="text-sm text-yellow-400 mb-4">Após enviar a mensagem no WhatsApp, confirme abaixo para limpar seu carrinho.</p>
-                 <button id="confirm-order-sent-btn" class="w-full bg-teal-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-teal-600 transition-all flex items-center justify-center gap-2">
+                 <button onclick="app.confirmOrderSent()" class="w-full bg-teal-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-teal-600 transition-all flex items-center justify-center gap-2">
                     <i class="fas fa-check-square"></i> Pedido Enviado, Limpar Carrinho
                 </button>
-                <button id="close-confirmation-modal-btn-2" class="w-full bg-gray-600 text-gray-100 font-bold py-3 px-6 rounded-lg hover:bg-gray-500 transition-all">Manter Carrinho e Fechar</button>
+                <button onclick="app.closeConfirmationModal()" class="w-full bg-gray-600 text-gray-100 font-bold py-3 px-6 rounded-lg hover:bg-gray-500 transition-all">Manter Carrinho e Fechar</button>
             </div>
         </div>
     </div>
     
-    <!-- Custom Alert Modal -->
+    <!-- Alert Modal: Generic modal for displaying alerts and messages to the user -->
     <div id="alert-modal" class="alert-modal fixed inset-0 bg-black bg-opacity-60 z-[60] hidden items-center justify-center p-4 opacity-0">
         <div class="bg-gray-800 text-gray-200 rounded-2xl shadow-2xl w-full max-w-sm text-center p-6 transform scale-95 transition-transform">
             <div id="alert-icon" class="mx-auto mb-4"></div>
             <h3 id="alert-title" class="text-xl font-bold text-gray-100 mb-2">Atenção!</h3>
             <p id="alert-message" class="text-gray-400 mb-6">Mensagem de alerta.</p>
-            <button id="close-alert-modal-btn" class="w-full bg-purple-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-purple-700 transition-all">OK</button>
+            <button onclick="app.closeAlertModal()" class="w-full bg-purple-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-purple-700 transition-all">OK</button>
         </div>
     </div>
 
-    <!-- Admin Panel Modal -->
-    <div id="admin-modal" class="fixed inset-0 bg-black bg-opacity-80 z-[70] hidden items-center justify-center p-4">
+    <!-- Admin Panel Modal: Interface for store owners to manage settings and menu -->
+    <div id="admin-modal" class="modal fixed inset-0 bg-black bg-opacity-80 z-[70] hidden items-center justify-center p-4">
         <div class="bg-gray-800 text-gray-200 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
             <div class="p-4 border-b border-gray-700 flex justify-between items-center">
                 <h3 class="text-2xl font-bold text-amber-400"><i class="fas fa-user-shield mr-2"></i>Painel do Administrador</h3>
-                <button id="close-admin-modal-btn" class="text-gray-400 hover:text-red-500"><i class="fas fa-times text-2xl"></i></button>
-            </div>
-            <!-- Admin Tabs -->
-            <div class="border-b border-gray-700">
-                <nav id="admin-tabs" class="flex space-x-4 px-6 -mb-px">
-                    <button data-tab="financeiro" class="admin-tab active">
-                        <i class="fas fa-chart-line mr-2"></i>Financeiro
-                    </button>
-                    <button data-tab="produtos" class="admin-tab">
-                        <i class="fas fa-box-open mr-2"></i>Produtos
-                    </button>
-                    <button data-tab="configuracoes" class="admin-tab">
-                        <i class="fas fa-cog mr-2"></i>Configurações
-                    </button>
-                </nav>
+                <button onclick="app.closeAdminModal()" class="text-gray-400 hover:text-red-500"><i class="fas fa-times text-2xl"></i></button>
             </div>
             <div id="admin-body" class="p-6 space-y-6 overflow-y-auto modal-body">
-                <!-- Admin content will be dynamically injected here -->
+                <!-- Admin panel content will be rendered here by JavaScript -->
             </div>
             <div class="p-4 bg-gray-900 border-t border-gray-700 flex flex-wrap justify-between items-center gap-4">
                 <div class="flex gap-4">
-                    <button id="save-admin-changes-btn" class="bg-green-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-700 transition-all flex items-center gap-2">
+                    <button onclick="app.saveAdminChanges()" class="bg-green-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-700 transition-all flex items-center gap-2">
                         <i class="fas fa-save"></i> Salvar Alterações
                     </button>
-                    <button id="reset-to-defaults-btn" class="bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-yellow-700 transition-all flex items-center gap-2 text-sm">
+                    <button onclick="app.resetToDefaults()" class="bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-yellow-700 transition-all flex items-center gap-2 text-sm">
                         <i class="fas fa-undo"></i> Restaurar Padrão
                     </button>
                 </div>
@@ -323,21 +316,21 @@
         </div>
     </div>
 
-    <!-- Password Prompt Modal -->
-    <div id="password-modal" class="fixed inset-0 bg-black bg-opacity-70 z-[80] hidden items-center justify-center p-4">
+    <!-- Admin Password Modal: Secure access to the admin panel -->
+    <div id="password-modal" class="modal fixed inset-0 bg-black bg-opacity-70 z-[80] hidden items-center justify-center p-4">
         <div class="bg-gray-800 text-gray-200 rounded-2xl shadow-2xl w-full max-w-sm text-center p-6">
             <h3 class="text-xl font-bold text-amber-400 mb-4">Acesso Restrito</h3>
             <p class="text-gray-400 mb-4">Por favor, insira a senha de administrador.</p>
             <input type="password" id="admin-password-input" class="block w-full bg-gray-700 border-2 border-gray-600 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 p-3 text-base" placeholder="Senha">
             <div class="mt-6 flex gap-4">
-                <button id="cancel-password-btn" class="w-full bg-gray-600 text-gray-100 font-bold py-2 px-6 rounded-lg hover:bg-gray-500 transition-all">Cancelar</button>
-                <button id="check-password-btn" class="w-full bg-purple-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-purple-700 transition-all">Entrar</button>
+                <button onclick="app.closePasswordModal()" class="w-full bg-gray-600 text-gray-100 font-bold py-2 px-6 rounded-lg hover:bg-gray-500 transition-all">Cancelar</button>
+                <button onclick="app.checkAdminPassword()" class="w-full bg-purple-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-purple-700 transition-all">Entrar</button>
             </div>
         </div>
     </div>
 
-    <!-- Generic Confirmation Modal -->
-    <div id="confirm-action-modal" class="fixed inset-0 bg-black bg-opacity-70 z-[80] hidden items-center justify-center p-4">
+    <!-- Confirmation Action Modal (Generic): Used for confirming destructive actions like resetting settings -->
+    <div id="confirm-action-modal" class="modal fixed inset-0 bg-black bg-opacity-70 z-[80] hidden items-center justify-center p-4">
         <div class="bg-gray-800 text-gray-200 rounded-2xl shadow-2xl w-full max-w-sm text-center p-6">
             <div id="confirm-action-icon" class="mx-auto mb-4"><i class="fas fa-exclamation-triangle text-yellow-500 text-5xl"></i></div>
             <h3 id="confirm-action-title" class="text-xl font-bold text-gray-100 mb-2">Confirmar Ação</h3>
@@ -350,431 +343,632 @@
     </div>
     
     <script type="module">
-    // =================================================================================
-    // MÓDULO DE CONFIGURAÇÃO (config.js)
-    // =================================================================================
-    
-    // --- IMPORTAÇÕES DO FIREBASE ---
+    // Import the functions you need from the Firebase SDKs
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, addDoc, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, onSnapshot, collection, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    // --- CONFIGURAÇÃO DO AMBIENTE ---
-    // Estas variáveis são injetadas pelo ambiente da aplicação.
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'sabor-acaiteria-dev';
-    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+    // Global variables provided by the Canvas environment (or default values for local testing)
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'sabor-acaiteria-online-default'; // Use a default ID for local testing
+    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+        apiKey: "AIzaSyDSIIJm5q3RbLEZsNzeFo0T6Y_mtdLKd7U",
+        authDomain: "sabor-acaiteria-oline.firebaseapp.com",
+        projectId: "sabor-acaiteria-oline",
+        storageBucket: "sabor-acaiteria-oline.firebasestorage.app",
+        messagingSenderId: "846562505902",
+        appId: "1:846562505902:web:2fb8bc72e72b457b95e93f",
+        measurementId: "G-DQ2M7J620Z"
+    };
     const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
-    // --- DADOS PADRÃO DA APLICAÇÃO ---
-    const defaultAdminSettings = {
-        storeStatus: 'auto', deliveryMode: 'both', openingTime: '14:30', closingTime: '22:15',
-        openDays: [1, 2, 3, 4, 5, 6], // Seg-Sáb
-        whatsappNumber: '5594991623576', address: 'Av. Rio Branco, Bairro Novo Horizonte, prox a praça'
-    };
-    const defaultProducts = [
-        { id: 'prod_1', name: 'Copo 300ml', price: 14.00, disabled: false }, { id: 'prod_2', name: 'Copo 400ml', price: 17.00, disabled: false },
-        { id: 'prod_3', name: 'Copo 500ml', price: 20.00, disabled: false }, { id: 'prod_4', name: 'Barca M', price: 55.00, disabled: true },
-    ];
-    const defaultToppings = {
-        free: { title: '🍓 Frutas e Cremes (Grátis, escolha até 3)', limit: 3, items: [ { name: 'Sorvete', disabled: false }, { name: 'Banana', disabled: false }, { name: 'Morango', disabled: false }, { name: 'Manga', disabled: false }, { name: 'Kiwi', disabled: false }, { name: 'Uva', disabled: false }, { name: 'Abacaxi', disabled: false }, { name: 'Creme de Leite Ninho', disabled: false }, { name: 'Creme de Cupuaçu', disabled: false }, { name: 'Mousse de Maracujá', disabled: false }, { name: 'Creme de Avelã', disabled: false } ] },
-        grains: { title: '🌾 Grãos e Cereais (Grátis, escolha até 2)', limit: 2, items: [ { name: 'Granola Tradicional', disabled: false }, { name: 'Aveia', disabled: false }, { name: 'Flocos', disabled: false }, { name: 'Tapioca', disabled: false }, { name: 'Paçoca', disabled: false }, { name: 'Leite em Pó', disabled: false }, { name: 'Amendoim', disabled: false }, { name: 'Coco Ralado', disabled: false } ] },
-        caldas: { title: '🍯 Caldas (Grátis, escolha 1)', limit: 1, items: [ { name: 'Leite Condensado', disabled: false }, { name: 'Calda de Chocolate', disabled: false }, { name: 'Calda de Morango', disabled: false }, { name: 'Calda de Caramelo', disabled: false }, { name: 'Calda de Açaí', disabled: false }, { name: 'Calda de Kiwi', disabled: false } ] },
-        paid_tier2: { title: '🍫 Doces e Chocolates (+ R$ 3,00 cada)', price: 3.00, items: [ { name: 'Gotas de Chocolate', disabled: false }, { name: 'Confetes', disabled: false }, { name: 'Bis Picado', disabled: false }, { name: 'Ouro Branco', disabled: false }, { name: 'Sonho de Valsa', disabled: false } ] },
-        paid_tier3: { title: '⭐ Mais alguma coisa? (+ R$ 4,00 cada)', price: 4.00, items: [ { name: 'Sorvete', disabled: false }, { name: 'Banana', disabled: false }, { name: 'Morango', disabled: false }, { name: 'Manga', disabled: false }, { name: 'Kiwi', disabled: false }, { name: 'Uva', disabled: false }, { name: 'Abacaxi', disabled: false }, { name: 'Creme de Leite Ninho', disabled: false }, { name: 'Creme de Cupuaçu', disabled: false }, { name: 'Mousse de Maracujá', disabled: false }, { name: 'Creme de Avelã', disabled: false } ] }
-    };
-
-    // --- CONSTANTES ---
-    const CART_STORAGE_KEY = `saborAcaiteriaCart_${appId}`;
-    const CUSTOMER_INFO_STORAGE_KEY = `saborAcaiteriaCustomerInfo_${appId}`;
-
-    // =================================================================================
-    // MÓDULO DE SERVIÇOS DO FIREBASE (firebaseService.js)
-    // =================================================================================
-    
-    const FirebaseService = {
+    // --- APP GLOBAL OBJECT ---
+    // Encapsulates all application state and logic for better organization and maintainability.
+    const app = {
+        // --- FIREBASE INSTANCES ---
+        firebaseApp: null,
         db: null,
         auth: null,
-        userId: null,
+        userId: null, // Will store the authenticated user ID
 
-        init() {
-            return new Promise((resolve, reject) => {
-                if (!firebaseConfig) {
-                    console.error("Configuração do Firebase não encontrada.");
-                    UI.showAlert("Erro Crítico", "A configuração do servidor não foi carregada. A aplicação não pode continuar.", true);
-                    reject("Firebase config missing");
-                    return;
-                }
-                
-                try {
-                    const app = initializeApp(firebaseConfig);
-                    this.db = getFirestore(app);
-                    this.auth = getAuth(app);
-                    console.log("Firebase inicializado.");
+        // --- APPLICATION STATE ---
+        cart: [], // Stores items currently in the user's cart
+        currentItem: null, // Temporarily holds the item being customized in the modal
+        whatsAppMessage: '', // Stores the formatted message for WhatsApp
+        isStoreOpen: false, // Flag indicating if the store is currently open
+        isDeliveryTime: false, // Flag indicating if it's currently delivery hours
+        adminSettings: {}, // Stores administrative settings loaded from Firestore
+        products: [], // Stores available product sizes loaded from Firestore
+        toppings: {}, // Stores available topping categories and items loaded from Firestore
 
-                    onAuthStateChanged(this.auth, async (user) => {
-                        if (user) {
-                            this.userId = user.uid;
-                            console.log("Usuário autenticado:", this.userId);
-                            resolve(); // Resolve a promessa quando a autenticação estiver completa
-                        } else {
-                            // Tenta autenticar
-                            try {
-                                if (initialAuthToken) {
-                                    await signInWithCustomToken(this.auth, initialAuthToken);
-                                    console.log("Login com token personalizado bem-sucedido.");
-                                } else {
-                                    await signInAnonymously(this.auth);
-                                    console.log("Login anônimo bem-sucedido.");
-                                }
-                            } catch (authError) {
-                                console.error("Erro na autenticação:", authError);
-                                UI.showAlert("Erro de Autenticação", "Não foi possível conectar ao serviço. Tente recarregar a página.", true);
-                                reject(authError);
-                            }
-                        }
-                    });
-
-                } catch (e) {
-                    console.error("Erro ao inicializar o Firebase:", e);
-                    UI.showAlert("Erro de Configuração", "Não foi possível conectar à base de dados.", true);
-                    reject(e);
-                }
-            });
+        // --- DEFAULT DATA (for initial load or reset) ---
+        // These values are used if no settings are found in Firestore or when resetting.
+        defaultAdminSettings: {
+            storeStatus: 'auto', // 'auto', 'open', 'closed' - Controls store's operational status
+            deliveryMode: 'both', // 'both', 'delivery', 'takeout' - Controls available order options
+            openingTime: '15:15', // Store opening time (HH:MM)
+            closingTime: '22:15', // Store closing time (HH:MM)
+            deliveryStartTime: '18:00', // Time when delivery option becomes available
+            openDays: [0, 1, 2, 3, 4, 5, 6], // Days of the week the store is open (0=Sunday, 6=Saturday)
+            whatsappNumber: '5594991623576', // WhatsApp number for order finalization
+            address: 'Av. Rio Branco, Bairro Novo Horizonte, prox a praça' // Store physical address
         },
-
-        listenToConfig(onUpdate) {
-            if (!this.db) return;
-
-            const configRefs = {
-                adminSettings: doc(this.db, "artifacts", appId, "public/data/configuracoes", "adminSettings"),
-                products: doc(this.db, "artifacts", appId, "public/data/configuracoes", "products"),
-                toppings: doc(this.db, "artifacts", appId, "public/data/configuracoes", "toppings"),
-            };
-
-            const unsubscribes = Object.entries(configRefs).map(([key, docRef]) => {
-                return onSnapshot(docRef, async (docSnap) => {
-                    let data;
-                    if (docSnap.exists()) {
-                        data = docSnap.data().data;
-                    } else {
-                        console.log(`Documento '${key}' não encontrado. Criando com padrão...`);
-                        const defaultData = { adminSettings: defaultAdminSettings, products: defaultProducts, toppings: defaultToppings }[key];
-                        await setDoc(docRef, { data: defaultData });
-                        data = defaultData;
-                    }
-                    onUpdate(key, data);
-                }, (error) => {
-                    console.error(`Erro ao ouvir o documento '${key}':`, error);
-                    UI.showAlert("Erro de Conexão", `Não foi possível carregar as configurações de ${key}.`, true);
-                });
-            });
-
-            return () => unsubscribes.forEach(unsub => unsub());
-        },
-        
-        async loadOrders() {
-            if (!this.db) return [];
-            try {
-                const ordersRef = collection(this.db, "artifacts", appId, "public/data/pedidos");
-                const querySnapshot = await getDocs(ordersRef);
-                const orders = [];
-                querySnapshot.forEach((doc) => {
-                    orders.push({ id: doc.id, ...doc.data() });
-                });
-                console.log(`${orders.length} pedidos carregados do Firestore.`);
-                return orders;
-            } catch (error) {
-                console.error("Erro ao carregar pedidos do Firestore:", error);
-                UI.showAlert("Erro ao Carregar Relatórios", "Não foi possível carregar os dados de vendas.", true);
-                return [];
+        defaultProducts: [
+            { id: 1, name: 'Copo 300ml', price: 14.00, disabled: false },
+            { id: 2, name: 'Copo 400ml', price: 17.00, disabled: false },
+            { id: 3, name: 'Copo 500ml', price: 20.00, disabled: false },
+            { id: 4, name: 'Barca M (Em Breve)', price: 55.00, disabled: true }, // Example of a disabled product
+        ],
+        defaultToppings: {
+            free: {
+                title: '🍓 Frutas e Cremes (Grátis, escolha até 3)', limit: 3, items: [
+                    { name: 'Sorvete', disabled: false }, { name: 'Banana', disabled: false }, { name: 'Morango', disabled: false }, 
+                    { name: 'Manga', disabled: false }, { name: 'Kiwi', disabled: false }, { name: 'Uva', disabled: false }, 
+                    { name: 'Abacaxi', disabled: false }, { name: 'Creme de Leite Ninho', disabled: false }, { name: 'Creme de Cupuaçu', disabled: false }, 
+                    { name: 'Mousse de Maracujá', disabled: false }, { name: 'Creme de Avelã', disabled: false }
+                ]
+            },
+            grains: {
+                title: '🌾 Grãos e Cereais (Grátis, escolha até 2)', limit: 2, items: [
+                    { name: 'Granola Tradicional', disabled: false }, { name: 'Aveia', disabled: false }, { name: 'Flocos', disabled: false }, 
+                    { name: 'Tapioca', disabled: false }, { name: 'Paçoca', disabled: false }, { name: 'Leite em Pó', disabled: false }, 
+                    { name: 'Amendoim', disabled: false }, { name: 'Coco Ralado', disabled: false }
+                ]
+            },
+            caldas: {
+                title: '🍯 Caldas (Grátis, escolha 1)', limit: 1, items: [
+                    { name: 'Leite Condensado', disabled: false }, { name: 'Calda de Chocolate', disabled: false }, { name: 'Calda de Morango', disabled: false }, 
+                    { name: 'Calda de Caramelo', disabled: false }, { name: 'Calda de Açaí', disabled: false }, { name: 'Calda de Kiwi', disabled: false }
+                ]
+            },
+            paid_tier2: {
+                title: '🍫 Doces e Chocolates (+ R$ 3,00 cada)', price: 3.00, items: [
+                    { name: 'Gotas de Chocolate', disabled: false }, { name: 'Confetes', disabled: false }, { name: 'Bis Picado', disabled: false }, 
+                    { name: 'Ouro Branco', disabled: false }, { name: 'Sonho de Valsa', disabled: false }
+                ]
+            },
+            paid_tier3: {
+                title: '⭐ Mais alguma coisa? (+ R$ 4,00 cada)', price: 4.00, items: [
+                    { name: 'Sorvete', disabled: false }, { name: 'Banana', disabled: false }, { name: 'Morango', disabled: false }, 
+                    { name: 'Manga', disabled: false }, { name: 'Kiwi', disabled: false }, { name: 'Uva', disabled: false }, 
+                    { name: 'Abacaxi', disabled: false }, { name: 'Creme de Leite Ninho', disabled: false }, { name: 'Creme de Cupuaçu', disabled: false }, 
+                    { name: 'Mousse de Maracujá', disabled: false }, { name: 'Creme de Avelã', disabled: false }
+                ]
             }
         },
 
-        async saveOrder(orderData) {
-            if (!this.db) {
-                UI.showAlert("Erro de Base de Dados", "Não foi possível salvar o pedido.", true);
-                return false;
-            }
-            try {
-                const ordersRef = collection(this.db, "artifacts", appId, "public/data/pedidos");
-                await addDoc(ordersRef, { ...orderData, userId: this.userId });
-                console.log("Pedido salvo no Firestore com sucesso.");
-                return true;
-            } catch (error) {
-                console.error("Erro ao salvar pedido no Firestore:", error);
-                UI.showAlert("Erro ao Salvar Pedido", "Não foi possível registar o seu pedido na base de dados.", true);
-                return false;
-            }
+        // --- LOCAL STORAGE KEYS ---
+        // Keys used to store application data in the browser's local storage.
+        CART_STORAGE_KEY: 'saborAcaiteriaCart',
+        CUSTOMER_INFO_STORAGE_KEY: 'saborAcaiteriaCustomerInfo',
+
+        // --- DOM ELEMENT SELECTORS (cached for performance) ---
+        // References to frequently accessed DOM elements for efficient manipulation.
+        elements: {
+            productList: document.getElementById('product-list'),
+            itemModal: document.getElementById('item-modal'),
+            cartModal: document.getElementById('cart-modal'),
+            confirmationModal: document.getElementById('confirmation-modal'),
+            adminModal: document.getElementById('admin-modal'),
+            cartButton: document.getElementById('cart-button'),
+            alertModal: document.getElementById('alert-modal'),
+            customerNameInput: document.getElementById('customer-name'),
+            customerAddressInput: document.getElementById('customer-address'),
+            neighborhoodSelect: document.getElementById('neighborhood'),
+            deliveryFields: document.getElementById('delivery-fields'),
+            deliveryOptionRadios: document.querySelectorAll('input[name="delivery_option"]'),
+            passwordModal: document.getElementById('password-modal'),
+            adminPasswordInput: document.getElementById('admin-password-input'),
+            confirmActionModal: document.getElementById('confirm-action-modal'),
+            deliveryTimeBanner: document.getElementById('delivery-time-banner'),
+            storeHoursDisplay: document.getElementById('store-hours-display'),
+            storeStatusIndicator: document.getElementById('store-status-indicator'),
+            storeStatusBanner: document.getElementById('store-status-banner'),
+            modalTitle: document.getElementById('modal-title'),
+            modalBody: document.getElementById('modal-body'),
+            modalItemTotal: document.getElementById('modal-item-total'),
+            addToCartBtn: document.getElementById('add-to-cart-btn'),
+            cartItemsContainer: document.getElementById('cart-items-container'),
+            cartTotalEl: document.getElementById('cart-total'),
+            cartCountEl: document.getElementById('cart-count'),
+            checkoutForm: document.getElementById('checkout-form'),
+            summaryDetails: document.getElementById('cart-summary-details'),
+            cartSubtotal: document.getElementById('cart-subtotal'),
+            cartDeliveryFee: document.getElementById('cart-delivery-fee'),
+            deliveryOptionDelivery: document.getElementById('delivery-option-delivery'),
+            deliveryOptionTakeout: document.getElementById('delivery-option-takeout'),
+            paymentMethod: document.getElementById('payment-method'),
+            observations: document.getElementById('observations'),
+            orderSummary: document.getElementById('order-summary'),
+            confirmationIcon: document.getElementById('confirmation-icon'),
+            confirmationTitle: document.getElementById('confirmation-title'),
+            confirmationMessage: document.getElementById('confirmation-message'),
+            initialConfirmButtons: document.getElementById('initial-confirm-buttons'),
+            postSendButtons: document.getElementById('post-send-buttons'),
+            alertMessage: document.getElementById('alert-message'),
+            alertTitle: document.getElementById('alert-title'),
+            alertIcon: document.getElementById('alert-icon'),
+            adminBody: document.getElementById('admin-body'),
+            confirmActionMessage: document.getElementById('confirm-action-message'),
+            confirmActionConfirmBtn: document.getElementById('confirm-action-confirm-btn'),
+            confirmActionCancelBtn: document.getElementById('confirm-action-cancel-btn'),
+            storeAddressDisplay: document.getElementById('store-address-display'),
+            whatsappLink: document.getElementById('whatsapp-link'),
         },
 
-        async saveAllAdminData({ adminSettings, products, toppings }) {
-            if (!this.db) {
-                UI.showAlert("Erro de Base de Dados", "Não foi possível salvar. Verifique a conexão com o Firebase.", true);
-                return false;
-            }
-            try {
-                const settingsRef = doc(this.db, "artifacts", appId, "public/data/configuracoes", "adminSettings");
-                const productsRef = doc(this.db, "artifacts", appId, "public/data/configuracoes", "products");
-                const toppingsRef = doc(this.db, "artifacts", appId, "public/data/configuracoes", "toppings");
-
-                await Promise.all([
-                    setDoc(settingsRef, { data: adminSettings }),
-                    setDoc(productsRef, { data: products }),
-                    setDoc(toppingsRef, { data: toppings })
-                ]);
-                return true;
-            } catch (error) {
-                console.error("Erro ao salvar no Firestore:", error);
-                UI.showAlert("Erro ao Salvar", "Não foi possível salvar as alterações na base de dados.", true);
-                return false;
-            }
-        }
-    };
-
-    // =================================================================================
-    // MÓDULO DE UI (ui.js)
-    // =================================================================================
-
-    const UI = {
-        elements: {},
-
-        init() {
-            this.elements = {
-                loadingOverlay: document.getElementById('loading-overlay'),
-                productList: document.getElementById('product-list'),
-                itemModal: document.getElementById('item-modal'),
-                cartModal: document.getElementById('cart-modal'),
-                confirmationModal: document.getElementById('confirmation-modal'),
-                adminModal: document.getElementById('admin-modal'),
-                alertModal: document.getElementById('alert-modal'),
-                passwordModal: document.getElementById('password-modal'),
-                confirmActionModal: document.getElementById('confirm-action-modal'),
-                cartButton: document.getElementById('cart-button'),
-                customerNameInput: document.getElementById('customer-name'),
-                customerAddressInput: document.getElementById('customer-address'),
-                neighborhoodSelect: document.getElementById('neighborhood'),
-                deliveryFields: document.getElementById('delivery-fields'),
-                deliveryOptionDelivery: document.getElementById('delivery-option-delivery'),
-                deliveryOptionTakeout: document.getElementById('delivery-option-takeout'),
-                deliveryOptionRadios: document.querySelectorAll('input[name="delivery_option"]'),
-                adminPasswordInput: document.getElementById('admin-password-input'),
-                storeHoursDisplay: document.getElementById('store-hours-display'),
-                storeStatusIndicator: document.getElementById('store-status-indicator'),
-                storeStatusBanner: document.getElementById('store-status-banner'),
-                storeAddressDisplay: document.getElementById('store-address-display'),
-                whatsappLink: document.getElementById('whatsapp-link'),
-                cartCount: document.getElementById('cart-count'),
-                cartItemsContainer: document.getElementById('cart-items-container'),
-                checkoutForm: document.getElementById('checkout-form'),
-                cartSummaryDetails: document.getElementById('cart-summary-details'),
-                cartSubtotal: document.getElementById('cart-subtotal'),
-                cartDeliveryFee: document.getElementById('cart-delivery-fee'),
-                cartTotal: document.getElementById('cart-total'),
-                modalTitle: document.getElementById('modal-title'),
-                modalBody: document.getElementById('modal-body'),
-                modalItemTotal: document.getElementById('modal-item-total'),
-                orderSummary: document.getElementById('order-summary'),
-                initialConfirmButtons: document.getElementById('initial-confirm-buttons'),
-                postSendButtons: document.getElementById('post-send-buttons'),
-                confirmationIcon: document.getElementById('confirmation-icon'),
-                confirmationTitle: document.getElementById('confirmation-title'),
-                confirmationMessage: document.getElementById('confirmation-message'),
-                adminBody: document.getElementById('admin-body'),
-                adminTabs: document.getElementById('admin-tabs'),
-                closeAlertModalBtn: document.getElementById('close-alert-modal-btn'),
-                adminPanelBtn: document.getElementById('admin-panel-btn'),
-                cancelPasswordBtn: document.getElementById('cancel-password-btn'),
-                checkPasswordBtn: document.getElementById('check-password-btn'),
-                closeAdminModalBtn: document.getElementById('close-admin-modal-btn'),
-                saveAdminChangesBtn: document.getElementById('save-admin-changes-btn'),
-                resetToDefaultsBtn: document.getElementById('reset-to-defaults-btn'),
-                toggleCartBtn: document.getElementById('toggle-cart-btn'),
-                closeCartModalBtn: document.getElementById('close-cart-modal-btn'),
-                closeItemModalBtn: document.getElementById('close-item-modal-btn'),
-                addToCartBtn: document.getElementById('add-to-cart-btn'),
-                finalizeOrderBtn: document.getElementById('finalize-order-btn'),
-                closeConfirmationModalBtn: document.getElementById('close-confirmation-modal-btn'),
-                closeConfirmationModalBtn2: document.getElementById('close-confirmation-modal-btn-2'),
-                sendWhatsappBtn: document.getElementById('send-whatsapp-btn'),
-                confirmOrderSentBtn: document.getElementById('confirm-order-sent-btn'),
-            };
-        },
-
+        // --- HELPER FUNCTIONS ---
+        /**
+         * Formats a number as Brazilian Real currency.
+         * @param {number} value - The number to format.
+         * @returns {string} The formatted currency string (e.g., "R$ 10,50").
+         */
         formatCurrency(value) {
-            return `R$ ${Number(value).toFixed(2).replace('.', ',')}`;
+            return `R$ ${value.toFixed(2).replace('.', ',')}`;
         },
-        
+
+        // --- LOCAL STORAGE FUNCTIONS (for cart and customer info) ---
+        /** Saves the current cart state to local storage. */
+        saveCart() { localStorage.setItem(app.CART_STORAGE_KEY, JSON.stringify(app.cart)); },
+        /** Loads the cart state from local storage. */
+        loadCart() {
+            const savedCart = localStorage.getItem(app.CART_STORAGE_KEY);
+            if (savedCart) app.cart = JSON.parse(savedCart);
+        },
+        /** Saves customer information (name, address, delivery option) to local storage. */
+        saveCustomerInfo() {
+            const info = {
+                name: app.elements.customerNameInput.value,
+                address: app.elements.customerAddressInput.value,
+                neighborhood: app.elements.neighborhoodSelect.value,
+                deliveryOption: document.querySelector('input[name="delivery_option"]:checked')?.value
+            };
+            localStorage.setItem(app.CUSTOMER_INFO_STORAGE_KEY, JSON.stringify(info));
+        },
+        /** Loads customer information from local storage and populates the form fields. */
+        loadCustomerInfo() {
+            const savedInfo = localStorage.getItem(app.CUSTOMER_INFO_STORAGE_KEY);
+            if (savedInfo) {
+                const info = JSON.parse(savedInfo);
+                app.elements.customerNameInput.value = info.name || '';
+                app.elements.customerAddressInput.value = info.address || '';
+                app.elements.neighborhoodSelect.value = info.neighborhood || '';
+                if (info.deliveryOption) {
+                    const radio = document.querySelector(`input[name="delivery_option"][value="${info.deliveryOption}"]`);
+                    if (radio) radio.checked = true;
+                }
+            }
+        },
+
+        // --- CUSTOM ALERT FUNCTION ---
+        /**
+         * Displays a custom alert modal.
+         * @param {string} message - The message to display.
+         * @param {string} [title='Atenção!'] - The title of the alert.
+         * @param {boolean} [isError=false] - If true, displays an error icon and color.
+         */
         showAlert(message, title = 'Atenção!', isError = false) {
-            if (!this.elements.alertModal) return;
-            this.elements.alertModal.querySelector('#alert-message').textContent = message;
-            this.elements.alertModal.querySelector('#alert-title').textContent = title;
-            const iconContainer = this.elements.alertModal.querySelector('#alert-icon');
-            iconContainer.innerHTML = isError 
-                ? '<i class="fas fa-exclamation-triangle text-red-500 text-5xl"></i>'
-                : '<i class="fas fa-check-circle text-green-500 text-5xl"></i>';
-            this.elements.alertModal.classList.remove('hidden', 'opacity-0');
-            this.elements.alertModal.classList.add('flex');
+            app.elements.alertMessage.textContent = message;
+            app.elements.alertTitle.textContent = title;
+            if (isError) {
+                app.elements.alertIcon.innerHTML = '<i class="fas fa-exclamation-triangle text-red-500 text-5xl"></i>';
+            } else {
+                app.elements.alertIcon.innerHTML = '<i class="fas fa-check-circle text-green-500 text-5xl"></i>';
+            }
+            app.elements.alertModal.classList.remove('hidden');
+            // Small delay to allow CSS transition to start
             setTimeout(() => {
-                this.elements.alertModal.querySelector('div > div').classList.remove('scale-95');
+                app.elements.alertModal.classList.remove('opacity-0');
+                app.elements.alertModal.querySelector('div > div').classList.remove('scale-95');
             }, 10);
         },
-
+        /** Closes the custom alert modal. */
         closeAlertModal() {
-            if (!this.elements.alertModal) return;
-            this.elements.alertModal.classList.add('opacity-0');
-            this.elements.alertModal.querySelector('div > div').classList.add('scale-95');
-            setTimeout(() => { this.elements.alertModal.classList.add('hidden'); }, 300);
+            app.elements.alertModal.classList.add('opacity-0');
+            app.elements.alertModal.querySelector('div > div').classList.add('scale-95');
+            // Match transition duration before hiding completely
+            setTimeout(() => { app.elements.alertModal.classList.add('hidden'); }, 300);
         },
 
-        toggleModal(modalElement, show) {
-            if (modalElement) {
-                modalElement.classList.toggle('hidden', !show);
-                modalElement.classList.toggle('flex', show);
-            }
-        },
-        
-        showConfirmationModal(message, onConfirm) {
-            if (!this.elements.confirmActionModal) return;
-            this.elements.confirmActionModal.querySelector('#confirm-action-message').textContent = message;
-            
-            const confirmBtn = this.elements.confirmActionModal.querySelector('#confirm-action-confirm-btn');
-            const cancelBtn = this.elements.confirmActionModal.querySelector('#confirm-action-cancel-btn');
-
-            // Clone and replace to remove old event listeners
-            const newConfirmBtn = confirmBtn.cloneNode(true);
-            confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
-            newConfirmBtn.addEventListener('click', () => {
-                onConfirm();
-                this.toggleModal(this.elements.confirmActionModal, false);
-            }, { once: true });
-
-            cancelBtn.addEventListener('click', () => this.toggleModal(this.elements.confirmActionModal, false), { once: true });
-
-            this.toggleModal(this.elements.confirmActionModal, true);
-        },
-
-        updateStoreStatus(isStoreOpen, adminSettings) {
-            const { storeStatusIndicator, storeStatusBanner, storeHoursDisplay } = this.elements;
+        // --- STORE STATUS LOGIC ---
+        /** Renders the store's operating hours and days in the header. */
+        renderStoreHoursDisplay() {
             const dayNames = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
-            let daysString = "Fechado";
-            if (adminSettings.openDays?.length > 0) {
-                daysString = adminSettings.openDays.length === 7 ? "Todos os dias" : adminSettings.openDays.sort().map(i => dayNames[i]).join(', ');
-            }
-            if (storeHoursDisplay) {
-                storeHoursDisplay.querySelector('span').textContent = `${adminSettings.openingTime} às ${adminSettings.closingTime} (${daysString})`;
-            }
+            let daysString = "Fechado todos os dias";
 
-            if (isStoreOpen) {
-                storeStatusIndicator.textContent = 'Aberto';
-                storeStatusIndicator.className = 'ml-2 px-3 py-1 text-sm rounded-full bg-green-500 text-white font-bold';
-                storeStatusBanner.classList.add('hidden');
-            } else {
-                storeStatusIndicator.textContent = 'Fechado';
-                storeStatusIndicator.className = 'ml-2 px-3 py-1 text-sm rounded-full bg-red-500 text-white font-bold';
-                storeStatusBanner.innerHTML = `<div class="bg-red-900/50 border-l-4 border-red-500 text-red-300 p-4 rounded-md mb-8 text-center" role="alert"><p class="font-bold text-lg">No momento estamos fechados!</p><p class="text-sm">Você pode navegar pelo cardápio, mas os pedidos estão suspensos.</p></div>`;
-                storeStatusBanner.classList.remove('hidden');
+            if (app.adminSettings.openDays && app.adminSettings.openDays.length > 0) {
+                if (app.adminSettings.openDays.length === 7) {
+                    daysString = "Todos os dias";
+                } else {
+                    // Sort days for consistent display (e.g., "Seg, Ter, Qua")
+                    daysString = app.adminSettings.openDays.sort((a, b) => a - b).map(dayIndex => dayNames[dayIndex]).join(', ');
+                }
             }
+            
+            app.elements.storeHoursDisplay.querySelector('span').textContent = `${app.adminSettings.openingTime || '00:00'} às ${app.adminSettings.closingTime || '00:00'} (${daysString})`;
         },
 
-        renderProducts(products, isStoreOpen) {
-            this.elements.productList.innerHTML = '';
-            if (!products || products.length === 0) {
-                this.elements.productList.innerHTML = '<p class="text-gray-500 col-span-full text-center">Nenhum produto disponível no momento.</p>';
+        /**
+         * Checks the current store status (open/closed) based on time and admin settings.
+         * Updates UI elements accordingly (indicator, banners, product buttons).
+         */
+        checkStoreStatus() {
+            const now = new Date();
+            const currentHour = now.getHours();
+            const currentMinute = now.getMinutes();
+            const currentDay = now.getDay(); // Sunday = 0, Monday = 1, etc.
+
+            // Ensure adminSettings are loaded before checking status
+            if (!app.adminSettings || Object.keys(app.adminSettings).length === 0) {
+                // If settings are not loaded yet, assume closed or loading state
+                app.isStoreOpen = false;
+                app.isDeliveryTime = false;
+                app.elements.storeStatusIndicator.textContent = 'Carregando...';
+                app.elements.storeStatusIndicator.className = 'ml-2 px-3 py-1 text-sm rounded-full bg-gray-500 text-white font-bold';
+                return; // Exit early
+            }
+
+            // Determine store open/closed status based on admin settings
+            if (app.adminSettings.storeStatus === 'open') {
+                app.isStoreOpen = true;
+            } else if (app.adminSettings.storeStatus === 'closed') {
+                app.isStoreOpen = false;
+            } else { // 'auto' mode
+                const isTodayOpenDay = app.adminSettings.openDays.includes(currentDay);
+                if (!isTodayOpenDay) {
+                    app.isStoreOpen = false;
+                } else {
+                    const [openHour, openMinute] = app.adminSettings.openingTime.split(':').map(Number);
+                    const [closeHour, closeMinute] = app.adminSettings.closingTime.split(':').map(Number);
+                    
+                    const openTimeInMinutes = openHour * 60 + openMinute;
+                    const closeTimeInMinutes = closeHour * 60 + closeMinute;
+                    const currentTimeInMinutes = currentHour * 60 + currentMinute;
+
+                    // Handle closing time crossing midnight (e.g., opens 22:00, closes 02:00 next day)
+                    if (closeTimeInMinutes < openTimeInMinutes) {
+                        app.isStoreOpen = (currentTimeInMinutes >= openTimeInMinutes || currentTimeInMinutes <= closeTimeInMinutes);
+                    } else {
+                        app.isStoreOpen = (currentTimeInMinutes >= openTimeInMinutes && currentTimeInMinutes <= closeTimeInMinutes);
+                    }
+                }
+            }
+
+            // Determine if it's currently within delivery hours
+            const [deliveryStartHour, deliveryStartMinute] = app.adminSettings.deliveryStartTime.split(':').map(Number);
+            app.isDeliveryTime = currentHour > deliveryStartHour || (currentHour === deliveryStartHour && currentMinute >= deliveryStartMinute);
+
+            // Update store status indicator (Open/Closed text and color)
+            if (app.isStoreOpen) {
+                app.elements.storeStatusIndicator.textContent = 'Aberto';
+                app.elements.storeStatusIndicator.className = 'ml-2 px-3 py-1 text-sm rounded-full bg-green-500 text-white font-bold';
+                app.elements.storeStatusBanner.innerHTML = ''; // Clear banner if open
+                app.elements.storeStatusBanner.classList.add('hidden');
+            } else {
+                app.elements.storeStatusIndicator.textContent = 'Fechado';
+                app.elements.storeStatusIndicator.className = 'ml-2 px-3 py-1 text-sm rounded-full bg-red-500 text-white font-bold';
+                app.elements.storeStatusBanner.innerHTML = `
+                    <div class="bg-red-900/50 border-l-4 border-red-500 text-red-300 p-4 rounded-md mb-8 text-center" role="alert">
+                        <p class="font-bold text-lg">No momento estamos fechados!</p>
+                        <p class="text-sm">Você pode navegar pelo cardápio, mas os pedidos estão suspensos.</p>
+                    </div>
+                `;
+                app.elements.storeStatusBanner.classList.remove('hidden');
+            }
+
+            // Re-render products to update their status display (e.g., disable if store is closed)
+            app.renderProducts(); 
+
+            // Update delivery time banner if store is open but delivery isn't active yet
+            if (!app.isDeliveryTime && app.isStoreOpen && (app.adminSettings.deliveryMode === 'both' || app.adminSettings.deliveryMode === 'delivery')) {
+                app.elements.deliveryTimeBanner.innerHTML = `
+                    <div class="bg-blue-900/50 border-l-4 border-blue-500 text-blue-300 p-4 rounded-md mb-8 text-center" role="alert">
+                        <p class="font-bold text-lg">Entregas começam a partir das ${app.adminSettings.deliveryStartTime}h!</p>
+                        <p class="text-sm">Você ainda pode fazer pedidos para retirar na loja.</p>
+                    </div>
+                `;
+                app.elements.deliveryTimeBanner.classList.remove('hidden');
+            } else {
+                app.elements.deliveryTimeBanner.classList.add('hidden');
+                app.elements.deliveryTimeBanner.innerHTML = '';
+            }
+
+            // Update store hours display in the header
+            app.renderStoreHoursDisplay();
+            // Update delivery options in the cart modal based on current status
+            app.renderDeliveryOptions(); 
+            // Re-render cart to update total/finalize button status
+            app.renderCart(); 
+        },
+
+        // --- RENDER FUNCTIONS ---
+        /** Renders the product cards on the main page. */
+        renderProducts() {
+            app.elements.productList.innerHTML = ''; // Clear existing products
+            if (!app.products || app.products.length === 0) {
+                app.elements.productList.innerHTML = '<p class="text-gray-500 text-center col-span-full">Nenhum produto disponível no momento.</p>';
                 return;
             }
-            products.forEach(product => {
-                if (product.disabled) return;
-                const productCard = document.createElement('div');
-                productCard.className = "bg-gray-800 border border-gray-700 rounded-xl p-4 text-center transition-all hover:shadow-lg hover:border-purple-400 cursor-pointer flex flex-col justify-between";
-                productCard.dataset.productId = product.id;
-                productCard.innerHTML = `
-                    <div>
-                        <h3 class="font-bold text-xl text-gray-100">${product.name}</h3>
-                        <p class="text-2xl font-semibold text-purple-400 mt-2">${this.formatCurrency(product.price)}</p>
+            app.products.forEach(product => {
+                // Determine if the product should be disabled either by its own setting or if the store is closed
+                const isDisabled = product.disabled || !app.isStoreOpen;
+                
+                // Conditional classes for the product card based on disabled status
+                const cardClasses = isDisabled
+                    ? "bg-gray-900 border border-gray-800 rounded-xl p-4 text-center transition-all cursor-not-allowed flex flex-col justify-between opacity-60"
+                    : "bg-gray-800 border border-gray-700 rounded-xl p-4 text-center transition-all hover:shadow-lg hover:border-purple-400 cursor-pointer flex flex-col justify-between";
+                // Conditional classes for the button
+                const buttonClasses = isDisabled
+                    ? "mt-4 bg-gray-600 text-gray-400 font-semibold py-2 px-4 rounded-lg cursor-not-allowed w-full"
+                    : "mt-4 bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-purple-500 transition-all w-full";
+                // Conditional text for the button
+                const buttonText = isDisabled ? "Indisponível" : "Montar"; // Changed text for clarity
+                // Conditional onclick handler for the card (empty if disabled)
+                const onclickHandler = isDisabled ? "" : `onclick="app.openItemModal('${product.id}')"`;
+                // Conditional text colors for name and price
+                const nameColor = isDisabled ? "text-gray-400" : "text-gray-100";
+                const priceColor = isDisabled ? "text-gray-500" : "text-purple-400";
+
+                const productCard = `
+                    <div class="${cardClasses}" ${onclickHandler}>
+                        <div>
+                            <h3 class="font-bold text-xl ${nameColor}">${product.name}</h3>
+                            <p class="text-2xl font-semibold ${priceColor} mt-2">${app.formatCurrency(product.price)}</p>
+                        </div>
+                        <button class="${buttonClasses}" ${isDisabled ? 'disabled' : ''}>${buttonText}</button>
                     </div>
-                    <button class="mt-4 bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-purple-500 transition-all w-full disabled:bg-gray-600 disabled:cursor-not-allowed" ${!isStoreOpen ? 'disabled' : ''}>${isStoreOpen ? 'Montar' : 'Fechado'}</button>
                 `;
-                this.elements.productList.appendChild(productCard);
+                app.elements.productList.innerHTML += productCard;
             });
         },
 
-        renderCart(cart, deliveryFee) {
-            const { cartItemsContainer, checkoutForm, cartSummaryDetails, cartSubtotal, cartDeliveryFee, cartTotal, cartCount } = this.elements;
-            
-            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-            cartCount.textContent = totalItems;
-            this.toggleModal(this.elements.cartButton, totalItems > 0);
-
-            if (totalItems === 0) {
-                cartItemsContainer.innerHTML = '<p class="text-gray-500 text-center">Seu carrinho está vazio.</p>';
-                checkoutForm.classList.add('hidden');
-                cartSummaryDetails.classList.add('hidden');
+        /** Renders the items in the shopping cart and updates summary totals. */
+        renderCart() {
+            // Display message if cart is empty, hide checkout form
+            if (app.cart.length === 0) {
+                app.elements.cartItemsContainer.innerHTML = '<p class="text-gray-500 text-center">Seu carrinho está vazio.</p>';
+                app.elements.checkoutForm.classList.add('hidden');
+                app.elements.summaryDetails.classList.add('hidden');
             } else {
-                checkoutForm.classList.remove('hidden');
-                cartSummaryDetails.classList.remove('hidden');
-                cartItemsContainer.innerHTML = cart.map((item, index) => `
+                // Show checkout form and summary if cart has items
+                app.elements.checkoutForm.classList.remove('hidden');
+                app.elements.summaryDetails.classList.remove('hidden');
+                // Map cart items to HTML for display
+                app.elements.cartItemsContainer.innerHTML = app.cart.map((item, index) => `
                     <div class="flex items-start justify-between p-4 border-b border-gray-700">
                         <div>
                             <p class="font-bold text-lg text-gray-100">${item.name} (x${item.quantity})</p>
                             <div class="text-sm text-gray-400 pl-2 mt-1">
-                                ${item.toppings.length > 0 ? item.toppings.map(t => `<span>- ${t.name} ${t.price > 0 ? `(+ ${this.formatCurrency(t.price)})` : ''}</span>`).join('<br>') : '<span>- Açaí puro</span>'}
+                                ${item.toppings.length > 0 ? item.toppings.map(t => `<span>- ${t.name} ${t.price > 0 ? `(+ ${app.formatCurrency(t.price)})` : ''}</span>`).join('<br>') : '<span>- Açaí puro</span>'}
                             </div>
                         </div>
                         <div class="text-right">
-                            <p class="font-bold text-lg text-purple-400">${this.formatCurrency(item.price * item.quantity)}</p>
+                            <p class="font-bold text-lg text-purple-400">${app.formatCurrency(item.price * item.quantity)}</p>
                             <div class="flex items-center gap-2 mt-2">
-                                <button data-action="decrease-quantity" data-index="${index}" class="bg-gray-700 w-7 h-7 rounded-full font-bold text-lg flex items-center justify-center">-</button>
+                                <button onclick="app.updateQuantity(${index}, -1)" class="bg-gray-700 w-7 h-7 rounded-full font-bold text-lg flex items-center justify-center">-</button>
                                 <span class="font-bold w-5 text-center">${item.quantity}</span>
-                                <button data-action="increase-quantity" data-index="${index}" class="bg-gray-700 w-7 h-7 rounded-full font-bold text-lg flex items-center justify-center">+</button>
-                                <button data-action="remove-from-cart" data-index="${index}" class="text-red-500 hover:text-red-700 ml-2"><i class="fas fa-trash"></i></button>
+                                <button onclick="app.updateQuantity(${index}, 1)" class="bg-gray-700 w-7 h-7 rounded-full font-bold text-lg flex items-center justify-center">+</button>
+                                <button onclick="app.removeFromCart(${index})" class="text-red-500 hover:text-red-700 ml-2"><i class="fas fa-trash"></i></button>
                             </div>
                         </div>
                     </div>
                 `).join('');
             }
+
+            // Calculate subtotal and delivery fee
+            const subtotal = app.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const deliveryOption = document.querySelector('input[name="delivery_option"]:checked')?.value;
             
-            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            let deliveryFee = 0;
+            // Apply delivery fee only if delivery option is selected and cart is not empty
+            if (deliveryOption === 'delivery' && subtotal > 0) {
+                const selectedOption = app.elements.neighborhoodSelect.options[app.elements.neighborhoodSelect.selectedIndex];
+                deliveryFee = parseFloat(selectedOption.dataset.fee || 0);
+            }
+            
             const finalTotal = subtotal + deliveryFee;
 
-            cartSubtotal.textContent = this.formatCurrency(subtotal);
-            cartDeliveryFee.textContent = this.formatCurrency(deliveryFee);
-            cartTotal.textContent = this.formatCurrency(finalTotal);
+            // Update displayed totals
+            app.elements.cartSubtotal.textContent = app.formatCurrency(subtotal);
+            app.elements.cartDeliveryFee.textContent = app.formatCurrency(deliveryFee);
+            app.elements.cartTotalEl.textContent = app.formatCurrency(finalTotal);
+
+            // Disable finalize button if store is closed or cart is empty
+            const finalizeBtn = document.querySelector('button[onclick="app.finalizeOrder()"]');
+            if (finalizeBtn) {
+                if (!app.isStoreOpen || app.cart.length === 0) {
+                    finalizeBtn.disabled = true;
+                    finalizeBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                } else {
+                    finalizeBtn.disabled = false;
+                    finalizeBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
+            }
         },
 
-        renderItemModal(product, toppings) {
-            this.elements.modalTitle.textContent = `Monte seu ${product.name}`;
-            this.elements.modalBody.innerHTML = `<div class="bg-yellow-900/50 border-l-4 border-yellow-500 text-yellow-300 p-4 rounded-md" role="alert"><div class="flex"><div class="py-1"><i class="fas fa-info-circle mr-3"></i></div><div><p class="font-bold">Atenção!</p><p class="text-sm">Escolha seus adicionais com carinho. Nossos copos têm espaço limitado.</p></div></div></div>`;
+        // --- DELIVERY OPTION LOGIC ---
+        /** Renders and manages the visibility and state of delivery/takeout options. */
+        renderDeliveryOptions() {
+            const deliveryRadio = app.elements.deliveryOptionDelivery.querySelector('input');
+            const takeoutRadio = app.elements.deliveryOptionTakeout.querySelector('input');
+            const deliveryOptionsContainer = document.getElementById('delivery-options');
 
-            Object.entries(toppings).forEach(([key, category]) => {
+            // Reset states for both options
+            app.elements.deliveryOptionDelivery.classList.add('hidden');
+            app.elements.deliveryOptionDelivery.classList.remove('opacity-50', 'cursor-not-allowed');
+            deliveryRadio.disabled = false;
+            app.elements.deliveryOptionDelivery.querySelector('.radio-title').textContent = 'Delivery (Entrega)';
+            app.elements.deliveryOptionDelivery.querySelector('.text-sm').textContent = '20-60 min';
+
+            app.elements.deliveryOptionTakeout.classList.add('hidden');
+            app.elements.deliveryOptionTakeout.classList.remove('opacity-50', 'cursor-not-allowed');
+            takeoutRadio.disabled = false;
+            app.elements.deliveryOptionTakeout.querySelector('.radio-title').textContent = 'Retirar na Loja';
+            app.elements.deliveryOptionTakeout.querySelector('.text-sm').textContent = '20-30 min';
+
+            let availableOptions = [];
+
+            // Show options based on admin settings for delivery mode
+            if (app.adminSettings.deliveryMode === 'both' || app.adminSettings.deliveryMode === 'delivery') {
+                app.elements.deliveryOptionDelivery.classList.remove('hidden');
+                availableOptions.push('delivery');
+            }
+            if (app.adminSettings.deliveryMode === 'both' || app.adminSettings.deliveryMode === 'takeout') {
+                app.elements.deliveryOptionTakeout.classList.remove('hidden');
+                availableOptions.push('takeout');
+            }
+
+            // Apply delivery time restriction: disable delivery if not yet delivery time
+            if (!app.isDeliveryTime && (app.adminSettings.deliveryMode === 'both' || app.adminSettings.deliveryMode === 'delivery')) {
+                deliveryRadio.disabled = true;
+                app.elements.deliveryOptionDelivery.classList.add('opacity-50', 'cursor-not-allowed');
+                app.elements.deliveryOptionDelivery.querySelector('.radio-title').textContent = 'Delivery (Indisponível)';
+                app.elements.deliveryOptionDelivery.querySelector('.text-sm').textContent = `Disponível a partir das ${app.adminSettings.deliveryStartTime}h`;
+                // Remove 'delivery' from available options if it's disabled due to time
+                availableOptions = availableOptions.filter(option => option !== 'delivery');
+            }
+
+            // Hide the entire delivery options container if no options are available
+            if (availableOptions.length === 0) {
+                deliveryOptionsContainer.classList.add('hidden');
+            } else {
+                deliveryOptionsContainer.classList.remove('hidden');
+            }
+
+            // Ensure a valid option is selected if the previously selected one is now disabled
+            const currentSelected = document.querySelector('input[name="delivery_option"]:checked');
+            if (!currentSelected || currentSelected.closest('label').classList.contains('hidden') || currentSelected.disabled) {
+                if (availableOptions.includes('takeout') && !takeoutRadio.disabled) {
+                    takeoutRadio.checked = true;
+                } else if (availableOptions.includes('delivery') && !deliveryRadio.disabled) {
+                    deliveryRadio.checked = true;
+                } else {
+                    // If no options are available or selectable, ensure none are checked
+                    deliveryRadio.checked = false;
+                    takeoutRadio.checked = false;
+                }
+            }
+            
+            app.toggleDeliveryFields(); // Update visibility of address fields
+        },
+
+        /** Toggles the visibility of delivery-related input fields based on the selected delivery option. */
+        toggleDeliveryFields() {
+            const deliveryOption = document.querySelector('input[name="delivery_option"]:checked')?.value;
+            if (deliveryOption === 'takeout' || !deliveryOption) {
+                app.elements.deliveryFields.classList.add('hidden');
+            } else {
+                app.elements.deliveryFields.classList.remove('hidden');
+            }
+            app.renderCart(); // Re-calculate cart total with potentially updated delivery fee
+        },
+
+        // --- MODAL LOGIC ---
+        /**
+         * Opens a specified modal with a smooth transition.
+         * @param {HTMLElement} modalElement - The modal DOM element to open.
+         */
+        openModal(modalElement) {
+            modalElement.classList.remove('hidden');
+            modalElement.classList.add('flex');
+            // Timeout to trigger CSS transition after display property changes
+            setTimeout(() => {
+                modalElement.classList.add('modal-active');
+            }, 10);
+        },
+        /**
+         * Closes a specified modal with a smooth transition.
+         * @param {HTMLElement} modalElement - The modal DOM element to close.
+         */
+        closeModal(modalElement) {
+            modalElement.classList.remove('modal-active');
+            // Timeout to allow CSS transition to complete before hiding completely
+            setTimeout(() => {
+                modalElement.classList.remove('flex');
+                modalElement.classList.add('hidden');
+            }, 300); // Match CSS transition duration
+        },
+
+        /**
+         * Opens the item customization modal for a selected product.
+         * @param {string} productId - The ID of the product to customize.
+         */
+        openItemModal(productId) {
+            // Prevent opening if the store is closed
+            if (!app.isStoreOpen) {
+                app.showAlert('A loja está fechada e não é possível montar pedidos agora.', 'Loja Fechada', true);
+                return;
+            }
+            const product = app.products.find(p => p.id.toString() === productId.toString());
+            if (!product) return; // Exit if product not found
+            
+            // Initialize currentItem with base product details
+            app.currentItem = {
+                id: productId, name: product.name, basePrice: product.price, price: product.price, quantity: 1, toppings: [],
+            };
+
+            app.elements.modalTitle.textContent = `Monte seu ${product.name}`;
+            app.elements.modalBody.innerHTML = ''; // Clear previous toppings
+
+            // Add a warning note about topping space
+            const warningNote = `<div class="bg-yellow-900/50 border-l-4 border-yellow-500 text-yellow-300 p-4 rounded-md" role="alert"><div class="flex"><div class="py-1"><i class="fas fa-info-circle mr-3"></i></div><div><p class="font-bold">Atenção!</p><p class="text-sm">Escolha seus adicionais com carinho. Nossos copos têm espaço limitado e talvez não seja possível incluir todos os itens selecionados.</p></div></div></div>`;
+            app.elements.modalBody.innerHTML += warningNote;
+
+            // Iterate through topping categories and render checkboxes
+            Object.entries(app.toppings).forEach(([key, category]) => {
                 const section = document.createElement('div');
-                let itemsHTML = category.items.filter(item => !item.disabled).map(item => `
+                // Filter out disabled toppings from display
+                let itemsHTML = (category.items || [])
+                    .filter(item => !item.disabled) 
+                    .map(item => `
                     <label class="flex items-center space-x-3 p-2 rounded-md hover:bg-gray-700 cursor-pointer">
                         <input type="checkbox" class="h-5 w-5 rounded border-gray-500 bg-gray-600 text-purple-600 focus:ring-purple-500" name="${key}" value="${item.name}" data-price="${category.price || 0}">
                         <span class="text-gray-300">${item.name}</span>
                     </label>
                 `).join('');
                 
+                // Only add the section if there are visible items
                 if (itemsHTML.length > 0) {
                     section.innerHTML = `<h4 class="text-lg font-bold text-gray-200 mb-2 pb-1 border-b border-gray-600">${category.title}</h4><div class="grid grid-cols-2 sm:grid-cols-3 gap-2">${itemsHTML}</div>`;
-                    this.elements.modalBody.appendChild(section);
+                    app.elements.modalBody.appendChild(section);
                 }
             });
-            this.toggleModal(this.elements.itemModal, true);
+            
+            // Add event listeners to all topping checkboxes to update total
+            app.elements.modalBody.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                checkbox.addEventListener('change', app.updateModalItemTotal);
+            });
+
+            app.updateModalItemTotal(); // Calculate initial item total
+            app.openModal(app.elements.itemModal); // Open the modal
         },
 
-        updateModalItemTotal(basePrice, toppings) {
+        /** Closes the item customization modal and resets current item data. */
+        closeItemModal() {
+            app.closeModal(app.elements.itemModal);
+            app.currentItem = null;
+        },
+
+        /**
+         * Recalculates the total price of the current item based on selected toppings.
+         * Also enforces topping limits for each category.
+         */
+        updateModalItemTotal() {
             let totalFromToppings = 0;
             const currentToppingsList = [];
 
-            Object.entries(toppings).forEach(([key, category]) => {
-                const checkboxes = this.elements.modalBody.querySelectorAll(`input[name="${key}"]`);
-                const checkedCheckboxes = this.elements.modalBody.querySelectorAll(`input[name="${key}"]:checked`);
+            Object.entries(app.toppings).forEach(([key, category]) => {
+                const checkboxes = app.elements.modalBody.querySelectorAll(`input[name="${key}"]`);
+                const checkedCheckboxes = app.elements.modalBody.querySelectorAll(`input[name="${key}"]:checked`);
 
+                // Enforce topping limits: disable unchecked checkboxes if limit is reached
                 if (category.limit) {
-                    const limitReached = checkedCheckboxes.length >= category.limit;
-                    checkboxes.forEach(cb => { cb.disabled = limitReached && !cb.checked; });
+                    if (checkedCheckboxes.length >= category.limit) {
+                        checkboxes.forEach(cb => { if (!cb.checked) cb.disabled = true; });
+                    } else {
+                        checkboxes.forEach(cb => { cb.disabled = false; });
+                    }
                 }
                 
+                // Add selected toppings to the current item's toppings list and calculate their cost
                 checkedCheckboxes.forEach(checkbox => {
                     const price = parseFloat(checkbox.dataset.price);
                     if (price > 0) totalFromToppings += price;
@@ -782,633 +976,672 @@
                 });
             });
             
-            const newPrice = basePrice + totalFromToppings;
-            this.elements.modalItemTotal.textContent = this.formatCurrency(newPrice);
-            return { price: newPrice, toppings: currentToppingsList.sort((a, b) => a.price - b.price) };
-        },
-        
-        renderAdminPanel(adminSettings, products, toppings, orders) {
-            const { adminBody } = this.elements;
-            adminBody.innerHTML = ''; // Clear previous content
-
-            // --- Financial Panel ---
-            const financialContent = this.getFinancialPanelHTML(orders);
-
-            // --- Products Panel ---
-            let menuContent = `<div id="admin-produtos-content" class="admin-tab-content space-y-6">`;
-            let productsHTML = `<div class="p-4 bg-gray-900/50 rounded-lg"><h4 class="text-xl font-bold text-purple-400 mb-4">Produtos: Tamanhos</h4><div id="admin-products-list" class="space-y-3">`;
-            products.forEach((product) => { productsHTML += this.getAdminItemHTML('product', product); });
-            productsHTML += `</div><button data-action="add-admin-item" data-type="product" class="mt-4 bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-500 text-sm"><i class="fas fa-plus mr-2"></i>Adicionar Tamanho</button></div>`;
-            menuContent += productsHTML;
-            
-            let toppingsHTML = `<div class="p-4 bg-gray-900/50 rounded-lg mt-6"><h4 class="text-xl font-bold text-purple-400 mb-4">Produtos: Complementos</h4>`;
-            Object.entries(toppings).forEach(([key, category]) => {
-                toppingsHTML += `<div class="mt-4"><h5 class="font-semibold text-gray-300 mb-2">${category.title}</h5><div id="admin-toppings-${key}" class="space-y-2">`;
-                (category.items || []).forEach((item) => { toppingsHTML += this.getAdminItemHTML('topping', item, key); });
-                toppingsHTML += `</div><button data-action="add-admin-item" data-type="topping" data-category="${key}" class="mt-3 bg-blue-600 text-white font-semibold py-1 px-3 rounded-lg hover:bg-blue-500 text-xs"><i class="fas fa-plus mr-1"></i>Adicionar</button></div>`;
-            });
-            toppingsHTML += `</div>`;
-            menuContent += toppingsHTML;
-            menuContent += `</div>`;
-
-            // --- Settings Panel ---
-            const daysOfWeek = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
-            const settingsContent = `
-                <div id="admin-configuracoes-content" class="admin-tab-content space-y-6">
-                    <div class="p-4 bg-gray-900/50 rounded-lg">
-                        <h4 class="text-xl font-bold text-purple-400 mb-4">Configurações Gerais</h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                            <div><label for="admin-whatsapp-number" class="block text-sm font-medium text-gray-300 mb-1">Número do WhatsApp</label><input type="text" id="admin-whatsapp-number" value="${adminSettings.whatsappNumber}" class="bg-gray-700 p-2 rounded-md border border-gray-600 w-full"></div>
-                            <div><label for="admin-address" class="block text-sm font-medium text-gray-300 mb-1">Endereço da Loja</label><input type="text" id="admin-address" value="${adminSettings.address}" class="bg-gray-700 p-2 rounded-md border border-gray-600 w-full"></div>
-                        </div>
-                    </div>
-                    <div class="p-4 bg-gray-900/50 rounded-lg">
-                        <h4 class="text-xl font-bold text-purple-400 mb-4">Controle de Funcionamento</h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                            <div>
-                                <h5 class="font-semibold text-gray-300 mb-2">Status da Loja</h5>
-                                <div class="space-y-2">
-                                    <label class="flex items-center p-2 rounded-md hover:bg-gray-700 cursor-pointer"><input type="radio" name="admin_store_status" value="auto" class="h-4 w-4 mr-2 text-purple-600" ${adminSettings.storeStatus === 'auto' ? 'checked' : ''}> Automático</label>
-                                    <label class="flex items-center p-2 rounded-md hover:bg-gray-700 cursor-pointer"><input type="radio" name="admin_store_status" value="open" class="h-4 w-4 mr-2 text-purple-600" ${adminSettings.storeStatus === 'open' ? 'checked' : ''}> Aberto (Manual)</label>
-                                    <label class="flex items-center p-2 rounded-md hover:bg-gray-700 cursor-pointer"><input type="radio" name="admin_store_status" value="closed" class="h-4 w-4 mr-2 text-purple-600" ${adminSettings.storeStatus === 'closed' ? 'checked' : ''}> Fechado (Manual)</label>
-                                </div>
-                            </div>
-                            <div>
-                                <h5 class="font-semibold text-gray-300 mb-2">Opções de Pedido</h5>
-                                <div class="space-y-2">
-                                    <label class="flex items-center p-2 rounded-md hover:bg-gray-700 cursor-pointer"><input type="radio" name="admin_delivery_mode" value="both" class="h-4 w-4 mr-2 text-purple-600" ${adminSettings.deliveryMode === 'both' ? 'checked' : ''}> Delivery e Retirada</label>
-                                    <label class="flex items-center p-2 rounded-md hover:bg-gray-700 cursor-pointer"><input type="radio" name="admin_delivery_mode" value="delivery" class="h-4 w-4 mr-2 text-purple-600" ${adminSettings.deliveryMode === 'delivery' ? 'checked' : ''}> Apenas Delivery</label>
-                                    <label class="flex items-center p-2 rounded-md hover:bg-gray-700 cursor-pointer"><input type="radio" name="admin_delivery_mode" value="takeout" class="h-4 w-4 mr-2 text-purple-600" ${adminSettings.deliveryMode === 'takeout' ? 'checked' : ''}> Apenas Retirada</label>
-                                </div>
-                            </div>
-                            <div class="md:col-span-2">
-                                <h5 class="font-semibold text-gray-300 mb-2">Horário (Modo Automático)</h5>
-                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                    <div class="sm:col-span-2">
-                                        <h6 class="text-sm font-medium text-gray-400 mb-1">Dias da Semana</h6>
-                                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-4 gap-y-2 text-sm">${daysOfWeek.map((day, index) => `<label class="flex items-center gap-2 p-1.5 rounded-md hover:bg-gray-700 cursor-pointer"><input type="checkbox" name="admin_open_day" value="${index}" class="h-4 w-4 rounded text-purple-600" ${adminSettings.openDays.includes(index) ? 'checked' : ''}><span>${day}</span></label>`).join('')}</div>
-                                    </div>
-                                    <div>
-                                        <h6 class="text-sm font-medium text-gray-400 mb-1">Horário</h6>
-                                        <div class="flex items-center gap-2">
-                                            <input type="time" id="admin-opening-time" value="${adminSettings.openingTime}" class="bg-gray-700 p-2 rounded-md border border-gray-600 w-full">
-                                            <span>às</span>
-                                            <input type="time" id="admin-closing-time" value="${adminSettings.closingTime}" class="bg-gray-700 p-2 rounded-md border border-gray-600 w-full">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>`;
-
-            adminBody.innerHTML = financialContent + menuContent + settingsContent;
-            this.updateAdminTabs();
-        },
-        
-        getFinancialPanelHTML(orders) {
-            if (!orders) return '<div id="admin-financeiro-content" class="admin-tab-content active"><p>A carregar relatórios...</p></div>';
-
-            const now = new Date();
-            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
-            startOfWeek.setHours(0, 0, 0, 0);
-            const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-
-            let dailySales = 0;
-            let weeklySales = 0;
-            let monthlySales = 0;
-            const paymentMethods = {};
-
-            orders.forEach(order => {
-                if (!order.timestamp || typeof order.timestamp.toDate !== 'function') return;
-                const orderDate = order.timestamp.toDate();
-                if (orderDate >= today) {
-                    dailySales += order.total;
-                }
-                if (orderDate >= startOfWeek) {
-                    weeklySales += order.total;
-                }
-                if (orderDate >= startOfMonth) {
-                    monthlySales += order.total;
-                }
-                
-                const method = order.paymentMethod;
-                if (!paymentMethods[method]) {
-                    paymentMethods[method] = { count: 0, total: 0 };
-                }
-                paymentMethods[method].count++;
-                paymentMethods[method].total += order.total;
-            });
-
-            let paymentHTML = Object.keys(paymentMethods).length > 0 
-                ? Object.entries(paymentMethods).map(([method, data]) => `
-                    <li class="flex justify-between items-center p-3 bg-gray-700/50 rounded-lg">
-                        <div>
-                            <i class="fas fa-credit-card mr-2 text-purple-400"></i>
-                            <span class="font-semibold">${method}</span>
-                        </div>
-                        <div>
-                            <span class="text-gray-400">${data.count} venda(s)</span>
-                            <span class="font-bold text-lg ml-4">${this.formatCurrency(data.total)}</span>
-                        </div>
-                    </li>
-                `).join('')
-                : '<li>Nenhuma venda registada.</li>';
-
-            return `
-                <div id="admin-financeiro-content" class="admin-tab-content active space-y-6">
-                    <div>
-                        <h4 class="text-xl font-bold text-purple-400 mb-4">Resumo de Vendas</h4>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div class="bg-gray-900/50 p-4 rounded-lg text-center">
-                                <p class="text-sm text-gray-400 flex items-center justify-center gap-2"><i class="fas fa-calendar-day"></i>Vendas Hoje</p>
-                                <p class="text-3xl font-bold text-green-400 mt-1">${this.formatCurrency(dailySales)}</p>
-                            </div>
-                            <div class="bg-gray-900/50 p-4 rounded-lg text-center">
-                                <p class="text-sm text-gray-400 flex items-center justify-center gap-2"><i class="fas fa-calendar-week"></i>Vendas na Semana</p>
-                                <p class="text-3xl font-bold text-green-400 mt-1">${this.formatCurrency(weeklySales)}</p>
-                            </div>
-                            <div class="bg-gray-900/50 p-4 rounded-lg text-center">
-                                <p class="text-sm text-gray-400 flex items-center justify-center gap-2"><i class="fas fa-calendar-alt"></i>Vendas no Mês</p>
-                                <p class="text-3xl font-bold text-green-400 mt-1">${this.formatCurrency(monthlySales)}</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div>
-                        <h4 class="text-xl font-bold text-purple-400 mb-4">Formas de Pagamento</h4>
-                        <ul class="space-y-2">${paymentHTML}</ul>
-                    </div>
-                </div>`;
+            // Update the current item's total price
+            app.currentItem.price = app.currentItem.basePrice + totalFromToppings;
+            // Sort toppings for consistent order in cart display
+            app.currentItem.toppings = currentToppingsList.sort((a, b) => a.name.localeCompare(b.name)); 
+            app.elements.modalItemTotal.textContent = app.formatCurrency(app.currentItem.price);
         },
 
-        getAdminItemHTML(type, item) {
-            if (type === 'product') {
-                return `<div class="grid grid-cols-1 md:grid-cols-4 gap-3 items-center p-2 bg-gray-700 rounded-md admin-item" data-type="product" data-id="${item.id}">
-                    <input type="text" value="${item.name}" class="admin-name col-span-2 bg-gray-600 p-2 rounded-md border-gray-500" placeholder="Nome do Produto">
-                    <input type="number" value="${item.price.toFixed(2)}" class="admin-price bg-gray-600 p-2 rounded-md border-gray-500" placeholder="Preço">
-                    <div class="flex items-center justify-between gap-2">
-                        <label class="flex items-center gap-2 text-sm cursor-pointer"><input type="checkbox" class="admin-disabled h-5 w-5" ${item.disabled ? 'checked' : ''}> Bloquear</label>
-                        <button data-action="remove-admin-item" class="text-red-500 hover:text-red-400"><i class="fas fa-trash-alt"></i></button>
-                    </div>
-                </div>`;
-            } else { // Topping
-                return `<div class="flex items-center gap-3 p-2 bg-gray-700 rounded-md admin-item" data-type="topping" data-name="${item.name}">
-                    <input type="text" value="${item.name}" class="admin-name flex-grow bg-gray-600 p-2 rounded-md border-gray-500" placeholder="Nome do Complemento">
-                    <label class="flex items-center gap-2 text-sm cursor-pointer whitespace-nowrap"><input type="checkbox" class="admin-disabled h-5 w-5" ${item.disabled ? 'checked' : ''}> Bloquear</label>
-                    <button data-action="remove-admin-item" class="text-red-500 hover:text-red-400"><i class="fas fa-trash-alt"></i></button>
-                </div>`;
+        /** Toggles the visibility of the cart modal. */
+        toggleCartModal() {
+            app.renderDeliveryOptions(); // Ensure delivery options are up-to-date before opening
+            app.renderCart(); // Re-render cart content
+            if (app.elements.cartModal.classList.contains('hidden')) {
+                app.openModal(app.elements.cartModal);
+            } else {
+                app.closeModal(app.elements.cartModal);
             }
         },
 
-        updateAdminTabs(activeTab = 'financeiro') {
-            document.querySelectorAll('.admin-tab').forEach(tab => {
-                tab.classList.toggle('active', tab.dataset.tab === activeTab);
-            });
-            document.querySelectorAll('.admin-tab-content').forEach(content => {
-                content.classList.toggle('active', content.id.includes(activeTab));
-            });
-        }
-    };
-
-
-    // =================================================================================
-    // MÓDULO PRINCIPAL DA APLICAÇÃO (app.js)
-    // =================================================================================
-
-    const App = {
-        state: {
-            cart: [], currentItem: null, whatsAppMessage: '', isStoreOpen: false,
-            adminSettings: {}, products: [], toppings: {}, orders: [],
-            isDataLoaded: false,
-        },
-        unsubscribeFromConfig: null,
-
-        async init() {
-            UI.init();
-            try {
-                await FirebaseService.init();
-                this.loadCartFromStorage();
-                this.loadCustomerInfoFromStorage();
-                this.initEventListeners();
-                this.listenForDataChanges();
-            } catch (error) {
-                console.error("Falha na inicialização da aplicação:", error);
-                UI.elements.loadingOverlay.innerHTML = '<div class="text-red-500 text-xl">Falha ao carregar. Tente recarregar a página.</div>';
-            }
+        /** Closes the confirmation modal and resets its content. */
+        closeConfirmationModal() {
+            app.closeModal(app.elements.confirmationModal);
+            // Reset confirmation modal content after closing to prepare for next use
+            setTimeout(() => {
+                app.elements.confirmationIcon.innerHTML = '<i class="fas fa-check-circle text-green-500 text-6xl mb-4"></i>';
+                app.elements.confirmationTitle.textContent = 'Pedido Recebido!';
+                app.elements.confirmationMessage.textContent = 'Seu resumo está pronto. Clique no botão para enviar via WhatsApp e concluir seu pedido!';
+                app.elements.initialConfirmButtons.classList.remove('hidden');
+                app.elements.initialConfirmButtons.classList.add('flex');
+                app.elements.postSendButtons.classList.add('hidden');
+                app.elements.postSendButtons.classList.remove('flex');
+            }, 300);
         },
 
-        listenForDataChanges() {
-            if (this.unsubscribeFromConfig) this.unsubscribeFromConfig();
-            
-            this.unsubscribeFromConfig = FirebaseService.listenToConfig((key, data) => {
-                this.state[key] = data;
-                
-                if (!this.state.isDataLoaded) {
-                    // Check if all essential data is loaded
-                    if (this.state.adminSettings && this.state.products && this.state.toppings) {
-                        this.state.isDataLoaded = true;
-                        UI.elements.loadingOverlay.classList.add('hidden');
-                    }
-                }
-
-                this.updateFullUI();
-            });
-        },
-
-        updateFullUI() {
-            if (!this.state.isDataLoaded) return;
-            this.checkStoreStatus();
-            UI.updateStoreStatus(this.state.isStoreOpen, this.state.adminSettings);
-            if(UI.elements.storeAddressDisplay) UI.elements.storeAddressDisplay.textContent = this.state.adminSettings.address;
-            if(UI.elements.whatsappLink) UI.elements.whatsappLink.href = `https://wa.me/${this.state.adminSettings.whatsappNumber}`;
-            UI.renderProducts(this.state.products, this.state.isStoreOpen);
-            this.renderCart();
-            this.renderDeliveryOptions();
-        },
-
-        initEventListeners() {
-            document.body.addEventListener('click', (e) => {
-                const target = e.target;
-                const productCard = target.closest('[data-product-id]');
-                const actionButton = target.closest('[data-action]');
-                const adminTab = target.closest('.admin-tab');
-
-                if (productCard) {
-                    this.handleOpenItemModal(productCard.dataset.productId);
-                } else if (actionButton) {
-                    const { action, index, type, category } = actionButton.dataset;
-                    e.preventDefault();
-                    switch (action) {
-                        case 'decrease-quantity': this.updateQuantity(index, -1); break;
-                        case 'increase-quantity': this.updateQuantity(index, 1); break;
-                        case 'remove-from-cart': this.removeFromCart(index); break;
-                        case 'add-admin-item': this.addAdminItem(type, category); break;
-                        case 'remove-admin-item': actionButton.closest('.admin-item').remove(); break;
-                    }
-                } else if (adminTab) {
-                    UI.updateAdminTabs(adminTab.dataset.tab);
-                }
-            });
-
-            // Setup for modal close buttons
-            const modals = ['item-modal', 'cart-modal', 'confirmation-modal', 'admin-modal', 'password-modal', 'alert-modal', 'confirm-action-modal'];
-            modals.forEach(modalId => {
-                const modal = document.getElementById(modalId);
-                if (modal) {
-                    modal.addEventListener('click', (e) => {
-                        // Close if clicking on the background overlay
-                        if (e.target.id === modalId) UI.toggleModal(modal, false);
-                    });
-                }
-            });
-
-            UI.elements.closeItemModalBtn.addEventListener('click', () => UI.toggleModal(UI.elements.itemModal, false));
-            UI.elements.closeCartModalBtn.addEventListener('click', () => UI.toggleModal(UI.elements.cartModal, false));
-            UI.elements.closeAdminModalBtn.addEventListener('click', () => UI.toggleModal(UI.elements.adminModal, false));
-            UI.elements.closeAlertModalBtn.addEventListener('click', () => UI.closeAlertModal());
-            UI.elements.cancelPasswordBtn.addEventListener('click', () => UI.toggleModal(UI.elements.passwordModal, false));
-            UI.elements.adminPanelBtn.addEventListener('click', () => UI.toggleModal(UI.elements.passwordModal, true));
-
-            UI.elements.checkPasswordBtn.addEventListener('click', () => this.openAdminPanel());
-            UI.elements.adminPasswordInput.addEventListener('keypress', (e) => e.key === 'Enter' && this.openAdminPanel());
-            UI.elements.saveAdminChangesBtn.addEventListener('click', () => this.saveAdminChanges());
-            UI.elements.resetToDefaultsBtn.addEventListener('click', () => this.resetToDefaults());
-            UI.elements.toggleCartBtn.addEventListener('click', () => this.toggleCartModal());
-            UI.elements.addToCartBtn.addEventListener('click', () => this.addToCart());
-            UI.elements.finalizeOrderBtn.addEventListener('click', () => this.finalizeOrder());
-            UI.elements.sendWhatsappBtn.addEventListener('click', () => this.sendOrderViaWhatsApp());
-            UI.elements.confirmOrderSentBtn.addEventListener('click', () => this.confirmOrderSent());
-            UI.elements.closeConfirmationModalBtn.addEventListener('click', () => UI.toggleModal(UI.elements.confirmationModal, false));
-            UI.elements.closeConfirmationModalBtn2.addEventListener('click', () => UI.toggleModal(UI.elements.confirmationModal, false));
-
-            UI.elements.customerNameInput.addEventListener('input', () => this.saveCustomerInfoToStorage());
-            UI.elements.customerAddressInput.addEventListener('input', () => this.saveCustomerInfoToStorage());
-            UI.elements.neighborhoodSelect.addEventListener('change', () => {
-                this.saveCustomerInfoToStorage();
-                this.renderCart();
-            });
-            UI.elements.deliveryOptionRadios.forEach(radio => {
-                radio.addEventListener('change', () => {
-                    this.toggleDeliveryFields();
-                    this.saveCustomerInfoToStorage();
-                });
-            });
-            UI.elements.modalBody.addEventListener('change', (e) => {
-                if (e.target.type === 'checkbox') this.updateModalItemTotal();
-            });
-        },
-        
-        loadCartFromStorage() { this.state.cart = JSON.parse(localStorage.getItem(CART_STORAGE_KEY)) || []; },
-        saveCartToStorage() { localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(this.state.cart)); },
-
-        loadCustomerInfoFromStorage() {
-            const info = JSON.parse(localStorage.getItem(CUSTOMER_INFO_STORAGE_KEY)) || {};
-            UI.elements.customerNameInput.value = info.name || '';
-            UI.elements.customerAddressInput.value = info.address || '';
-            UI.elements.neighborhoodSelect.value = info.neighborhood || '';
-            if (info.deliveryOption) {
-                const radio = document.querySelector(`input[name="delivery_option"][value="${info.deliveryOption}"]`);
-                if (radio) radio.checked = true;
-            }
-        },
-        saveCustomerInfoToStorage() {
-            const info = {
-                name: UI.elements.customerNameInput.value,
-                address: UI.elements.customerAddressInput.value,
-                neighborhood: UI.elements.neighborhoodSelect.value,
-                deliveryOption: document.querySelector('input[name="delivery_option"]:checked')?.value
-            };
-            localStorage.setItem(CUSTOMER_INFO_STORAGE_KEY, JSON.stringify(info));
-        },
-        
+        // --- CART LOGIC ---
+        /** Adds the currently customized item to the cart. */
         addToCart() {
-            const { currentItem, cart } = this.state;
-            if (!currentItem) return;
-
-            const existingItemIndex = cart.findIndex(item => {
-                if (item.id !== currentItem.id || item.toppings.length !== currentItem.toppings.length) return false;
-                const currentToppingsSet = new Set(currentItem.toppings.map(t => t.name));
-                const existingToppingsSet = new Set(item.toppings.map(t => t.name));
-                return currentToppingsSet.size === existingToppingsSet.size && [...currentToppingsSet].every(t => existingToppingsSet.has(t));
+            // Check if an identical item (same product and toppings) already exists in the cart
+            const existingItemIndex = app.cart.findIndex(item => {
+                if (item.id !== app.currentItem.id || item.toppings.length !== app.currentItem.toppings.length) return false;
+                // Compare toppings by name for exact match
+                const currentToppingsNames = app.currentItem.toppings.map(t => t.name).sort().join(',');
+                const existingToppingsNames = item.toppings.map(t => t.name).sort().join(',');
+                return currentToppingsNames === existingToppingsNames;
             });
 
             if (existingItemIndex > -1) {
-                cart[existingItemIndex].quantity++;
+                // If item exists, just increment its quantity
+                app.cart[existingItemIndex].quantity++;
             } else {
-                cart.push({ ...currentItem });
+                // Otherwise, add the new item to the cart
+                app.cart.push({ ...app.currentItem });
             }
             
-            this.saveCartToStorage();
-            UI.toggleModal(UI.elements.itemModal, false);
-            this.renderCart();
+            app.saveCart(); // Save updated cart to local storage
+            app.closeItemModal(); // Close customization modal
+            app.renderCart(); // Re-render cart display
+            app.updateCartIcon(); // Update cart button icon
         },
 
+        /**
+         * Updates the quantity of an item in the cart or removes it if quantity drops to zero.
+         * @param {number} index - The index of the item in the cart array.
+         * @param {number} change - The amount to change the quantity by (+1 or -1).
+         */
         updateQuantity(index, change) {
-            if (this.state.cart[index].quantity + change > 0) {
-                this.state.cart[index].quantity += change;
+            if (app.cart[index].quantity + change > 0) {
+                app.cart[index].quantity += change;
             } else {
-                this.state.cart.splice(index, 1);
+                // If quantity becomes 0 or less, remove the item
+                app.removeFromCart(index);
+                return; 
             }
-            this.saveCartToStorage();
-            this.renderCart();
+            app.saveCart();
+            app.renderCart();
+            app.updateCartIcon();
         },
 
+        /**
+         * Removes an item from the cart.
+         * @param {number} index - The index of the item to remove.
+         */
         removeFromCart(index) {
-            this.state.cart.splice(index, 1);
-            this.saveCartToStorage();
-            this.renderCart();
+            app.cart.splice(index, 1); // Remove item from array
+            app.saveCart();
+            app.renderCart();
+            app.updateCartIcon();
         },
 
-        renderCart() {
-            const deliveryOption = document.querySelector('input[name="delivery_option"]:checked')?.value;
-            let deliveryFee = 0;
-            if (deliveryOption === 'delivery' && this.state.cart.length > 0) {
-                const selectedOption = UI.elements.neighborhoodSelect.options[UI.elements.neighborhoodSelect.selectedIndex];
-                deliveryFee = parseFloat(selectedOption.dataset.fee || 0);
+        /** Updates the number displayed on the floating cart icon. */
+        updateCartIcon() {
+            const totalItems = app.cart.reduce((sum, item) => sum + item.quantity, 0);
+            app.elements.cartCountEl.textContent = totalItems;
+            if (totalItems > 0) {
+                app.elements.cartButton.classList.remove('hidden');
+            } else {
+                 app.elements.cartButton.classList.add('hidden');
+                 // Close cart modal if it's open and the cart becomes empty
+                 if (app.elements.cartModal.classList.contains('flex')) {
+                     app.toggleCartModal(); 
+                 }
             }
-            UI.renderCart(this.state.cart, deliveryFee);
         },
 
-        toggleCartModal() {
-            const isHidden = UI.elements.cartModal.classList.contains('hidden');
-            if (isHidden) {
-                this.renderDeliveryOptions();
-                this.renderCart();
-            }
-            UI.toggleModal(UI.elements.cartModal, isHidden);
-        },
-
-        checkStoreStatus() {
-            const { storeStatus, openDays, openingTime, closingTime } = this.state.adminSettings;
-            if (storeStatus === 'open') { this.state.isStoreOpen = true; return; }
-            if (storeStatus === 'closed') { this.state.isStoreOpen = false; return; }
-            
-            const now = new Date();
-            const currentDay = now.getDay();
-            const isTodayOpenDay = openDays?.includes(currentDay);
-
-            if (!isTodayOpenDay) { this.state.isStoreOpen = false; return; }
-
-            const openTime = parseInt(openingTime.replace(':', ''));
-            const closeTime = parseInt(closingTime.replace(':', ''));
-            const currentTime = now.getHours() * 100 + now.getMinutes();
-            this.state.isStoreOpen = (currentTime >= openTime && currentTime <= closeTime);
-        },
-
-        handleOpenItemModal(productId) {
-            if (!this.state.isStoreOpen) {
-                UI.showAlert('A loja está fechada e não é possível montar pedidos agora.', 'Loja Fechada', true);
+        // --- ORDER FINALIZATION LOGIC ---
+        /** Finalizes the order by validating inputs, generating the WhatsApp message, and opening the confirmation modal. */
+        finalizeOrder() {
+            // Pre-checks for store status and empty cart
+            if (!app.isStoreOpen) {
+                app.showAlert('A loja está fechada e não está aceitando pedidos no momento.', 'Loja Fechada', true);
                 return;
             }
-            const product = this.state.products.find(p => p.id.toString() === productId);
-            if (!product) return;
-            
-            this.state.currentItem = {
-                id: product.id, name: product.name, basePrice: product.price, quantity: 1,
-                price: product.price, toppings: []
-            };
-            
-            UI.renderItemModal(product, this.state.toppings);
-            this.updateModalItemTotal();
-        },
-        
-        updateModalItemTotal() {
-            if (!this.state.currentItem) return;
-            const { price, toppings } = UI.updateModalItemTotal(this.state.currentItem.basePrice, this.state.toppings);
-            this.state.currentItem.price = price;
-            this.state.currentItem.toppings = toppings;
-        },
 
-        finalizeOrder() {
-            if (!this.state.isStoreOpen) { UI.showAlert('A loja está fechada.', 'Loja Fechada', true); return; }
-            if (this.state.cart.length === 0) { UI.showAlert('Seu carrinho está vazio!', 'Carrinho Vazio', true); return; }
-            
-            const name = UI.elements.customerNameInput.value.trim();
-            const address = UI.elements.customerAddressInput.value.trim();
-            const neighborhood = UI.elements.neighborhoodSelect.value;
+            if (app.cart.length === 0) {
+                app.showAlert('Seu carrinho está vazio!', 'Carrinho Vazio', true);
+                return;
+            }
+
+            // Gather customer and order details
+            const name = app.elements.customerNameInput.value.trim();
+            const address = app.elements.customerAddressInput.value.trim();
+            const neighborhood = app.elements.neighborhoodSelect.value;
+            const payment = app.elements.paymentMethod.value;
+            const obs = app.elements.observations.value.trim();
             const deliveryOption = document.querySelector('input[name="delivery_option"]:checked')?.value;
 
-            if (!deliveryOption) { UI.showAlert('Nenhuma opção de entrega/retirada disponível.', 'Ops!', true); return; }
-            if (!name) { UI.showAlert('Por favor, preencha seu Nome.', 'Dados Incompletos', true); return; }
-            if (deliveryOption === 'delivery' && (!address || !neighborhood)) { UI.showAlert('Preencha o Bairro e o Endereço para entrega.', 'Dados Incompletos', true); return; }
-
-            const payment = document.getElementById('payment-method').value;
-            const obs = document.getElementById('observations').value.trim();
-            const selectedOption = UI.elements.neighborhoodSelect.options[UI.elements.neighborhoodSelect.selectedIndex];
-            const deliveryFee = deliveryOption === 'delivery' ? parseFloat(selectedOption.dataset.fee || 0) : 0;
-            const subtotal = this.state.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            const finalTotal = subtotal + deliveryFee;
-
-            let summary = `*NOVO PEDIDO - SABOR AÇAÍTERIA*\n\n*Cliente:* ${name}\n`;
-            if (deliveryOption === 'delivery') {
-                summary += `*Opção:* ENTREGA\n*Endereço:* ${address}, ${neighborhood}\n\n`;
-            } else {
-                summary += `*Opção:* RETIRAR NA LOJA\n\n`;
+            // Validate delivery option selection
+            if (!deliveryOption) {
+                app.showAlert('Nenhuma opção de entrega/retirada está disponível no momento. Por favor, verifique as configurações da loja.', 'Ops!', true);
+                return;
             }
+
+            // Validate customer name
+            if (!name) {
+                app.showAlert('Por favor, preencha seu Nome para continuar.', 'Dados Incompletos', true);
+                app.elements.customerNameInput.focus();
+                return;
+            }
+
+            // Validate delivery time for delivery option
+            if (deliveryOption === 'delivery' && !app.isDeliveryTime) {
+                app.showAlert(`As entregas só começam a partir das ${app.adminSettings.deliveryStartTime}h. Por favor, escolha "Retirar na Loja" ou aguarde.`, 'Horário de Entrega', true);
+                return;
+            }
+            
+            let deliveryFee = 0;
+            // Start building the WhatsApp message string
+            let summary = `*NOVO PEDIDO - SABOR AÇAÍTERIA*\n\n*Cliente:* ${name}\n`;
+
+            // Add delivery details or takeout details to the summary
+            if (deliveryOption === 'delivery') {
+                if (!address || !neighborhood) {
+                    app.showAlert('Por favor, selecione o Bairro e preencha o Endereço para entrega.', 'Dados Incompletos', true);
+                    if (!neighborhood) app.elements.neighborhoodSelect.focus();
+                    else app.elements.customerAddressInput.focus();
+                    return;
+                }
+                summary += `*Opção:* ENTREGA\n*Tempo Estimado:* 20-60 min\n*Endereço:* ${address}, ${neighborhood}\n\n`;
+                const selectedOption = app.elements.neighborhoodSelect.options[app.elements.neighborhoodSelect.selectedIndex];
+                deliveryFee = parseFloat(selectedOption.dataset.fee || 0);
+            } else {
+                summary += `*Opção:* RETIRAR NA LOJA\n*Tempo Estimado:* 20-30 min\n\n`;
+            }
+
+            // Add cart items to the summary
             summary += `*ITENS DO PEDIDO:*\n------------------------\n`;
-            this.state.cart.forEach(item => {
+            app.cart.forEach(item => {
                 summary += `*${item.quantity}x ${item.name}*\n`;
                 if (item.toppings.length > 0) {
                     item.toppings.forEach(t => { summary += `  - ${t.name}\n`; });
                 } else {
                     summary += `  - Açaí puro\n`;
                 }
-                summary += `Subtotal: ${UI.formatCurrency(item.price * item.quantity)}\n------------------------\n`;
+                summary += `Subtotal: ${app.formatCurrency(item.price * item.quantity)}\n------------------------\n`;
             });
-            summary += `\n*Subtotal dos Itens: ${UI.formatCurrency(subtotal)}*\n`;
-            if (deliveryFee > 0) summary += `*Taxa de Entrega: ${UI.formatCurrency(deliveryFee)}*\n`;
-            summary += `*TOTAL DO PEDIDO: ${UI.formatCurrency(finalTotal)}*\n*Forma de Pagamento:* ${payment}\n`;
+
+            // Calculate final totals
+            const subtotal = app.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const finalTotal = subtotal + deliveryFee;
+            
+            // Add total, payment, and observations to the summary
+            summary += `\n*Subtotal dos Itens: ${app.formatCurrency(subtotal)}*\n`;
+            if (deliveryOption === 'delivery') summary += `*Taxa de Entrega: ${app.formatCurrency(deliveryFee)}*\n`;
+            summary += `*TOTAL DO PEDIDO: ${app.formatCurrency(finalTotal)}*\n*Forma de Pagamento:* ${payment}\n`;
             if (obs) summary += `*Observações:* ${obs}\n`;
 
-            this.state.whatsAppMessage = encodeURIComponent(summary);
-            UI.elements.orderSummary.innerHTML = summary.replace(/\n/g, '<br>').replace(/\*(.*?)\*/g, '<strong>$1</strong>');
-            this.toggleCartModal();
-            UI.toggleModal(UI.elements.confirmationModal, true);
-        },
-
-        sendOrderViaWhatsApp() {
-            window.open(`https://wa.me/${this.state.adminSettings.whatsappNumber}?text=${this.state.whatsAppMessage}`, '_blank');
-            UI.elements.confirmationIcon.innerHTML = '<i class="fab fa-whatsapp-square text-green-400 text-6xl mb-4"></i>';
-            UI.elements.confirmationTitle.textContent = 'Quase lá!';
-            UI.elements.confirmationMessage.textContent = 'Após enviar sua mensagem no WhatsApp, clique abaixo para confirmar e limpar seu carrinho.';
-            UI.elements.initialConfirmButtons.classList.add('hidden');
-            UI.elements.postSendButtons.classList.remove('hidden');
-            UI.elements.postSendButtons.classList.add('flex');
-        },
-
-        async confirmOrderSent() {
-            const deliveryOption = document.querySelector('input[name="delivery_option"]:checked')?.value;
-            const selectedOption = UI.elements.neighborhoodSelect.options[UI.elements.neighborhoodSelect.selectedIndex];
-            const deliveryFee = deliveryOption === 'delivery' ? parseFloat(selectedOption.dataset.fee || 0) : 0;
-            const subtotal = this.state.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            app.whatsAppMessage = encodeURIComponent(summary); // Encode message for URL
+            // Display summary in HTML, replacing newlines with <br> and bolding text between asterisks
+            app.elements.orderSummary.innerHTML = summary.replace(/\n/g, '<br>').replace(/\*(.*?)\*/g, '<strong>$1</strong>');
             
-            const orderData = {
-                items: this.state.cart,
-                total: subtotal + deliveryFee,
-                paymentMethod: document.getElementById('payment-method').value,
-                customerName: UI.elements.customerNameInput.value.trim(),
-                deliveryOption: deliveryOption,
-                timestamp: serverTimestamp()
-            };
+            app.closeModal(app.elements.cartModal); // Close cart modal
+            app.openModal(app.elements.confirmationModal); // Open confirmation modal
+        },
 
-            const saved = await FirebaseService.saveOrder(orderData);
-            if (saved) {
-                this.state.cart = [];
-                this.saveCartToStorage();
-                UI.toggleModal(UI.elements.confirmationModal, false);
-                this.renderCart();
-                UI.showAlert('Ótimo! Seu pedido foi registado e o carrinho foi limpo.', 'Pedido Enviado');
+        /** Opens WhatsApp with the pre-filled order message. */
+        sendOrderViaWhatsApp() {
+            const url = `https://wa.me/${app.adminSettings.whatsappNumber}?text=${app.whatsAppMessage}`;
+            window.open(url, '_blank'); // Open WhatsApp in a new tab
+            
+            // Update confirmation modal to prompt user to confirm sending
+            app.elements.confirmationIcon.innerHTML = '<i class="fab fa-whatsapp-square text-green-400 text-6xl mb-4"></i>';
+            app.elements.confirmationTitle.textContent = 'Quase lá!';
+            app.elements.confirmationMessage.textContent = 'A janela do WhatsApp foi aberta. Após enviar sua mensagem, clique no botão abaixo para confirmar e limpar seu carrinho.';
+            app.elements.initialConfirmButtons.classList.add('hidden');
+            app.elements.postSendButtons.classList.remove('hidden');
+            app.elements.postSendButtons.classList.add('flex');
+        },
+
+        /** Confirms the order has been sent, clears the cart, and provides a success alert. */
+        confirmOrderSent() {
+            app.cart = []; // Clear the cart
+            app.saveCart(); // Save empty cart
+            app.closeConfirmationModal(); // Close confirmation modal
+            app.renderCart(); // Re-render cart (will show empty)
+            app.updateCartIcon(); // Update cart icon
+            app.showAlert('Ótimo! Seu carrinho foi limpo. Aguarde a confirmação da loja no WhatsApp.', 'Pedido Enviado');
+        },
+
+        // --- ADMIN PANEL LOGIC ---
+        /**
+         * Opens the admin password modal.
+         * @param {Event} event - The click event from the admin panel link.
+         */
+        openAdminPanel(event) {
+            event.preventDefault(); // Prevent default link behavior
+            app.openModal(app.elements.passwordModal);
+            app.elements.adminPasswordInput.focus(); // Focus on password input
+        },
+
+        /** Closes the admin password modal and clears the input. */
+        closePasswordModal() {
+            app.closeModal(app.elements.passwordModal);
+            app.elements.adminPasswordInput.value = ''; // Clear password input
+        },
+
+        /** Checks the entered password for admin access. */
+        checkAdminPassword() {
+            const password = app.elements.adminPasswordInput.value;
+            // NOTE: For a real application, this password should be securely managed (e.g., hashed, stored server-side).
+            // This is a client-side example for demonstration purposes only.
+            if (password === "admin123") { // DEFAULT PASSWORD - CHANGE IF DESIRED FOR DEPLOYMENT
+                app.closePasswordModal();
+                app.renderAdminPanel(); // Render the admin panel content
+                app.openModal(app.elements.adminModal); // Open the admin modal
+            } else {
+                app.closePasswordModal();
+                app.showAlert("Senha incorreta!", 'Acesso Negado', true);
             }
+        },
+
+        /** Closes the admin panel modal. */
+        closeAdminModal() {
+            app.closeModal(app.elements.adminModal);
+        },
+
+        /** Renders the full admin panel content based on current settings, products, and toppings. */
+        renderAdminPanel() {
+            app.elements.adminBody.innerHTML = ''; // Clear previous content
+
+            // Section for Store Settings
+            const daysOfWeek = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
+            let daysCheckboxesHTML = daysOfWeek.map((day, index) => `
+                <label class="flex items-center gap-2 p-1.5 rounded-md hover:bg-gray-700 cursor-pointer">
+                    <input type="checkbox" name="admin_open_day" value="${index}" class="h-4 w-4 rounded text-purple-600 focus:ring-purple-500" ${app.adminSettings.openDays && app.adminSettings.openDays.includes(index) ? 'checked' : ''}>
+                    <span>${day}</span>
+                </label>
+            `).join('');
+
+            let settingsHTML = `
+                <div class="p-4 bg-gray-900/50 rounded-lg">
+                    <h4 class="text-xl font-bold text-purple-400 mb-4">Configurações Gerais</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                         <div>
+                            <label for="admin-whatsapp-number" class="block text-sm font-medium text-gray-300 mb-1">Número do WhatsApp</label>
+                            <input type="text" id="admin-whatsapp-number" value="${app.adminSettings.whatsappNumber || ''}" class="bg-gray-700 p-2 rounded-md border border-gray-600 w-full" placeholder="Ex: 5511999998888">
+                        </div>
+                         <div>
+                            <label for="admin-address" class="block text-sm font-medium text-gray-300 mb-1">Endereço da Loja</label>
+                            <input type="text" id="admin-address" value="${app.adminSettings.address || ''}" class="bg-gray-700 p-2 rounded-md border border-gray-600 w-full">
+                        </div>
+                    </div>
+                </div>
+                <div class="p-4 bg-gray-900/50 rounded-lg mt-6">
+                    <h4 class="text-xl font-bold text-purple-400 mb-4">Controle de Funcionamento</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                        <div>
+                            <h5 class="font-semibold text-gray-300 mb-2">Status da Loja</h5>
+                            <div class="space-y-2">
+                                <label class="flex items-center p-2 rounded-md hover:bg-gray-700 cursor-pointer"><input type="radio" name="admin_store_status" value="auto" class="h-4 w-4 mr-2 text-purple-600 focus:ring-purple-500" ${app.adminSettings.storeStatus === 'auto' ? 'checked' : ''}> Automático (por horário)</label>
+                                <label class="flex items-center p-2 rounded-md hover:bg-gray-700 cursor-pointer"><input type="radio" name="admin_store_status" value="open" class="h-4 w-4 mr-2 text-purple-600 focus:ring-purple-500" ${app.adminSettings.storeStatus === 'open' ? 'checked' : ''}> Aberto (Manual)</label>
+                                <label class="flex items-center p-2 rounded-md hover:bg-gray-700 cursor-pointer"><input type="radio" name="admin_store_status" value="closed" class="h-4 w-4 mr-2 text-purple-600 focus:ring-purple-500" ${app.adminSettings.storeStatus === 'closed' ? 'checked' : ''}> Fechado (Manual)</label>
+                            </div>
+                        </div>
+                        <div>
+                            <h5 class="font-semibold text-gray-300 mb-2">Opções de Pedido</h5>
+                             <div class="space-y-2">
+                                <label class="flex items-center p-2 rounded-md hover:bg-gray-700 cursor-pointer"><input type="radio" name="admin_delivery_mode" value="both" class="h-4 w-4 mr-2 text-purple-600 focus:ring-purple-500" ${app.adminSettings.deliveryMode === 'both' ? 'checked' : ''}> Delivery e Retirada</label>
+                                <label class="flex items-center p-2 rounded-md hover:bg-gray-700 cursor-pointer"><input type="radio" name="admin_delivery_mode" value="delivery" class="h-4 w-4 mr-2 text-purple-600 focus:ring-purple-500" ${app.adminSettings.deliveryMode === 'delivery' ? 'checked' : ''}> Apenas Delivery</label>
+                                <label class="flex items-center p-2 rounded-md hover:bg-gray-700 cursor-pointer"><input type="radio" name="admin_delivery_mode" value="takeout" class="h-4 w-4 mr-2 text-purple-600 focus:ring-purple-500" ${app.adminSettings.deliveryMode === 'takeout' ? 'checked' : ''}> Apenas Retirada</label>
+                            </div>
+                        </div>
+                        <div class="md:col-span-2">
+                             <h5 class="font-semibold text-gray-300 mb-2">Horário de Funcionamento (Modo Automático)</h5>
+                             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div class="sm:col-span-2">
+                                    <h6 class="text-sm font-medium text-gray-400 mb-1">Dias da Semana</h6>
+                                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-4 gap-y-2 text-sm">
+                                        ${daysCheckboxesHTML}
+                                    </div>
+                                </div>
+                                <div>
+                                    <h6 class="text-sm font-medium text-gray-400 mb-1">Horário de Funcionamento</h6>
+                                    <div class="flex items-center gap-2">
+                                        <input type="time" id="admin-opening-time" value="${app.adminSettings.openingTime || '00:00'}" class="bg-gray-700 p-2 rounded-md border border-gray-600 w-full">
+                                        <span>às</span>
+                                        <input type="time" id="admin-closing-time" value="${app.adminSettings.closingTime || '00:00'}" class="bg-gray-700 p-2 rounded-md border border-gray-600 w-full">
+                                    </div>
+                                </div>
+                                <div class="col-span-1">
+                                    <h6 class="text-sm font-medium text-gray-400 mb-1">Início da Entrega</h6>
+                                    <input type="time" id="admin-delivery-start-time" value="${app.adminSettings.deliveryStartTime || '00:00'}" class="bg-gray-700 p-2 rounded-md border border-gray-600 w-full">
+                                </div>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            app.elements.adminBody.innerHTML += settingsHTML;
+
+            // Section for Products (Tamanhos)
+            let productsHTML = `<div class="p-4 bg-gray-900/50 rounded-lg mt-6"><h4 class="text-xl font-bold text-purple-400 mb-4">Cardápio: Tamanhos (Produtos)</h4><div id="admin-products-list" class="space-y-3">`;
+            (app.products || []).forEach((product, index) => {
+                productsHTML += `
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3 items-center p-2 bg-gray-700 rounded-md admin-item" data-type="product" data-original-id="${product.id}">
+                        <input type="text" value="${product.name}" class="admin-name col-span-2 bg-gray-600 p-2 rounded-md border border-gray-500" placeholder="Nome do Produto">
+                        <input type="number" step="0.01" value="${product.price.toFixed(2)}" class="admin-price bg-gray-600 p-2 rounded-md border border-gray-500" placeholder="Preço">
+                        <div class="flex items-center justify-between gap-2">
+                            <label class="flex items-center gap-2 text-sm cursor-pointer"><input type="checkbox" class="admin-disabled h-5 w-5" ${product.disabled ? 'checked' : ''}> Bloquear</label>
+                            <button onclick="app.removeAdminItem(this)" class="text-red-500 hover:text-red-400"><i class="fas fa-trash-alt"></i></button>
+                        </div>
+                    </div>`;
+            });
+            productsHTML += `</div><button onclick="app.addAdminItem('product')" class="mt-4 bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-500 text-sm"><i class="fas fa-plus mr-2"></i>Adicionar Tamanho</button></div>`;
+            app.elements.adminBody.innerHTML += productsHTML;
+
+            // Section for Toppings
+            let toppingsHTML = `<div class="p-4 bg-gray-900/50 rounded-lg mt-6"><h4 class="text-xl font-bold text-purple-400 mb-4">Cardápio: Complementos</h4>`;
+            Object.entries(app.toppings).forEach(([key, category]) => {
+                toppingsHTML += `<div class="mt-4"><h5 class="font-semibold text-gray-300 mb-2">${category.title}</h5><div id="admin-toppings-${key}" class="space-y-2">`;
+                (category.items || []).forEach((item, index) => {
+                    toppingsHTML += `
+                        <div class="flex items-center gap-3 p-2 bg-gray-700 rounded-md admin-item" data-type="topping" data-category="${key}">
+                            <input type="text" value="${item.name}" class="admin-name flex-grow bg-gray-600 p-2 rounded-md border border-gray-500" placeholder="Nome do Complemento">
+                            <label class="flex items-center gap-2 text-sm cursor-pointer whitespace-nowrap"><input type="checkbox" class="admin-disabled h-5 w-5" ${item.disabled ? 'checked' : ''}> Bloquear</label>
+                            <button onclick="app.removeAdminItem(this)" class="text-red-500 hover:text-red-400"><i class="fas fa-trash-alt"></i></button>
+                        </div>`;
+                });
+                toppingsHTML += `</div><button onclick="app.addAdminItem('topping', '${key}')" class="mt-3 bg-blue-600 text-white font-semibold py-1 px-3 rounded-lg hover:bg-blue-500 text-xs"><i class="fas fa-plus mr-1"></i>Adicionar Complemento</button></div>`;
+            });
+            toppingsHTML += `</div>`;
+            app.elements.adminBody.innerHTML += toppingsHTML;
+        },
+
+        /**
+         * Adds a new product or topping item row to the admin panel.
+         * @param {string} type - 'product' or 'topping'.
+         * @param {string} [categoryKey=''] - The category key for toppings (e.g., 'free', 'paid_tier2').
+         */
+        addAdminItem(type, categoryKey = '') {
+            const newItemHTML = (type === 'product')
+                ? `<div class="grid grid-cols-1 md:grid-cols-4 gap-3 items-center p-2 bg-gray-700 rounded-md admin-item" data-type="product" data-original-id="${Date.now()}">
+                       <input type="text" value="Novo Produto" class="admin-name col-span-2 bg-gray-600 p-2 rounded-md border border-gray-500">
+                       <input type="number" step="0.01" value="0.00" class="admin-price bg-gray-600 p-2 rounded-md border border-gray-500">
+                       <div class="flex items-center justify-between gap-2">
+                           <label class="flex items-center gap-2 text-sm cursor-pointer"><input type="checkbox" class="admin-disabled h-5 w-5"> Bloquear</label>
+                           <button onclick="app.removeAdminItem(this)" class="text-red-500 hover:text-red-400"><i class="fas fa-trash-alt"></i></button>
+                       </div>
+                   </div>`
+                : `<div class="flex items-center gap-3 p-2 bg-gray-700 rounded-md admin-item" data-type="topping" data-category="${categoryKey}">
+                       <input type="text" value="Novo Complemento" class="admin-name flex-grow bg-gray-600 p-2 rounded-md border border-gray-500">
+                       <label class="flex items-center gap-2 text-sm cursor-pointer whitespace-nowrap"><input type="checkbox" class="admin-disabled h-5 w-5"> Bloquear</label>
+                       <button onclick="app.removeAdminItem(this)" class="text-red-500 hover:text-red-400"><i class="fas fa-trash-alt"></i></button>
+                   </div>`;
+            
+            const containerId = (type === 'product') ? 'admin-products-list' : `admin-toppings-${categoryKey}`;
+            document.getElementById(containerId).insertAdjacentHTML('beforeend', newItemHTML);
+        },
+
+        /**
+         * Removes a product or topping item row from the admin panel.
+         * @param {HTMLElement} button - The trash icon button that was clicked.
+         */
+        removeAdminItem(button) {
+            button.closest('.admin-item').remove();
         },
         
-        async openAdminPanel() {
-            if (UI.elements.adminPasswordInput.value === "admin123") {
-                UI.toggleModal(UI.elements.passwordModal, false);
-                UI.elements.adminPasswordInput.value = '';
-                
-                UI.elements.adminBody.innerHTML = '<p class="text-center p-8">Carregando relatórios e configurações...</p>';
-                UI.toggleModal(UI.elements.adminModal, true);
-
-                this.state.orders = await FirebaseService.loadOrders();
-                
-                UI.renderAdminPanel(this.state.adminSettings, this.state.products, this.state.toppings, this.state.orders);
-            } else {
-                UI.showAlert("Senha incorreta!", 'Acesso Negado', true);
-                UI.elements.adminPasswordInput.value = '';
-            }
-        },
-
+        /** Saves all changes made in the admin panel to Firestore. */
         async saveAdminChanges() {
-            const newAdminSettings = {
-                storeStatus: document.querySelector('input[name="admin_store_status"]:checked').value,
-                deliveryMode: document.querySelector('input[name="admin_delivery_mode"]:checked').value,
-                openingTime: document.getElementById('admin-opening-time').value,
-                closingTime: document.getElementById('admin-closing-time').value,
-                openDays: Array.from(document.querySelectorAll('input[name="admin_open_day"]:checked')).map(cb => parseInt(cb.value)),
-                whatsappNumber: document.getElementById('admin-whatsapp-number').value,
-                address: document.getElementById('admin-address').value,
-            };
-            
-            const newProducts = Array.from(document.querySelectorAll('#admin-products-list .admin-item')).map(item => ({
-                id: item.dataset.id,
-                name: item.querySelector('.admin-name').value,
-                price: parseFloat(item.querySelector('.admin-price').value),
-                disabled: item.querySelector('.admin-disabled').checked,
-            }));
+            if (!app.db || !app.userId) {
+                console.error("Firestore not initialized or user not authenticated.");
+                app.showAlert("Erro: Firestore não inicializado. Tente novamente mais tarde.", "Erro de Conexão", true);
+                return;
+            }
 
-            const newToppings = { ...this.state.toppings };
-            Object.keys(newToppings).forEach(key => {
-                const items = Array.from(document.querySelectorAll(`#admin-toppings-${key} .admin-item`)).map(item => ({
-                    name: item.querySelector('.admin-name').value,
-                    disabled: item.querySelector('.admin-disabled').checked,
-                }));
-                newToppings[key] = { ...newToppings[key], items };
-            });
+            try {
+                // 1. Save General Settings
+                const newAdminSettings = {
+                    storeStatus: document.querySelector('input[name="admin_store_status"]:checked').value,
+                    deliveryMode: document.querySelector('input[name="admin_delivery_mode"]:checked').value,
+                    openingTime: document.getElementById('admin-opening-time').value,
+                    closingTime: document.getElementById('admin-closing-time').value,
+                    deliveryStartTime: document.getElementById('admin-delivery-start-time').value,
+                    openDays: Array.from(document.querySelectorAll('input[name="admin_open_day"]:checked')).map(cb => parseInt(cb.value)),
+                    whatsappNumber: document.getElementById('admin-whatsapp-number').value,
+                    address: document.getElementById('admin-address').value,
+                };
+                await setDoc(doc(app.db, `artifacts/${appId}/public/data/adminSettings`), newAdminSettings);
+                app.adminSettings = newAdminSettings; // Update local state immediately
 
-            const success = await FirebaseService.saveAllAdminData({ adminSettings: newAdminSettings, products: newProducts, toppings: newToppings });
-            if (success) {
-                UI.showAlert('Configurações salvas na base de dados!', 'Salvo!', false);
-                // No need to update state manually, onSnapshot will handle it.
+                // Update WhatsApp link immediately after saving new number
+                app.elements.whatsappLink.href = `https://wa.me/${app.adminSettings.whatsappNumber}`;
+
+                // 2. Save Products
+                const newProducts = [];
+                document.querySelectorAll('#admin-products-list .admin-item').forEach(item => {
+                    const name = item.querySelector('.admin-name').value;
+                    const price = parseFloat(item.querySelector('.admin-price').value);
+                    const disabled = item.querySelector('.admin-disabled').checked;
+                    const originalId = parseInt(item.dataset.originalId); 
+
+                    if (name && !isNaN(price)) {
+                        newProducts.push({ id: originalId || Date.now(), name, price, disabled });
+                    }
+                });
+                await setDoc(doc(app.db, `artifacts/${appId}/public/data/products`), { items: newProducts });
+                app.products = newProducts;
+
+                // 3. Save Toppings
+                const newToppings = {};
+                Object.keys(app.toppings).forEach(key => {
+                    const categoryItems = [];
+                    document.querySelectorAll(`#admin-toppings-${key} .admin-item`).forEach(item => {
+                        const name = item.querySelector('.admin-name').value;
+                        const disabled = item.querySelector('.admin-disabled').checked;
+                        if (name) { 
+                            categoryItems.push({ name, disabled });
+                        }
+                    });
+                    newToppings[key] = { ...app.toppings[key], items: categoryItems };
+                });
+                await setDoc(doc(app.db, `artifacts/${appId}/public/data/toppings`), newToppings);
+                app.toppings = newToppings;
+                
+                app.showAlert('Configurações salvas com sucesso!', 'Salvo!', false);
+                app.closeAdminModal();
+                // Re-initialize app to apply new settings across the UI (will trigger onSnapshot listeners)
+                // No need to call initializeApp directly, onSnapshot will handle it.
+            } catch (error) {
+                console.error("Erro ao salvar alterações no Firebase:", error);
+                app.showAlert(`Erro ao salvar: ${error.message}`, "Erro de Salvamento", true);
             }
         },
 
-        resetToDefaults() {
-            UI.showConfirmationModal(
-                "Tem certeza que deseja restaurar tudo para os valores padrão? As alterações serão salvas na base de dados.",
+        /**
+         * Displays a generic confirmation modal before performing a specified action.
+         * @param {string} message - The confirmation message.
+         * @param {Function} onConfirm - The callback function to execute if confirmed.
+         */
+        showConfirmationModal(message, onConfirm) {
+            app.elements.confirmActionMessage.textContent = message;
+            
+            // Clone buttons to remove old event listeners and attach new ones
+            // This is a robust way to prevent multiple listeners accumulating on repeated modal opens.
+            const oldConfirmBtn = app.elements.confirmActionConfirmBtn;
+            const newConfirmBtn = oldConfirmBtn.cloneNode(true);
+            oldConfirmBtn.parentNode.replaceChild(newConfirmBtn, oldConfirmBtn);
+
+            const oldCancelBtn = app.elements.confirmActionCancelBtn;
+            const newCancelBtn = oldCancelBtn.cloneNode(true);
+            oldCancelBtn.parentNode.replaceChild(newCancelBtn, oldCancelBtn);
+
+            newConfirmBtn.addEventListener('click', () => {
+                onConfirm(); // Execute the provided callback
+                app.closeConfirmationActionModal();
+            }, { once: true }); // Use { once: true } to automatically remove listener after first click
+
+            newCancelBtn.addEventListener('click', () => {
+                app.closeConfirmationActionModal();
+            }, { once: true });
+
+            app.openModal(app.elements.confirmActionModal);
+        },
+
+        /** Closes the generic confirmation modal. */
+        closeConfirmationActionModal() {
+            app.closeModal(app.elements.confirmActionModal);
+        },
+
+        /** Resets all admin settings, products, and toppings to their default values in Firestore. */
+        async resetToDefaults() {
+            app.showConfirmationModal(
+                "Tem certeza que deseja restaurar o cardápio e as configurações para os valores padrão? Todas as suas alterações serão perdidas.",
                 async () => {
-                    const success = await FirebaseService.saveAllAdminData({ adminSettings: defaultAdminSettings, products: defaultProducts, toppings: defaultToppings });
-                    if (success) {
-                        UI.showAlert('Configurações restauradas com sucesso!', 'Sucesso', false);
+                    if (!app.db || !app.userId) {
+                        console.error("Firestore not initialized or user not authenticated.");
+                        app.showAlert("Erro: Firestore não inicializado. Tente novamente mais tarde.", "Erro de Conexão", true);
+                        return;
+                    }
+                    try {
+                        // Set default values back to Firestore
+                        await setDoc(doc(app.db, `artifacts/${appId}/public/data/adminSettings`), app.defaultAdminSettings);
+                        await setDoc(doc(app.db, `artifacts/${appId}/public/data/products`), { items: app.defaultProducts });
+                        await setDoc(doc(app.db, `artifacts/${appId}/public/data/toppings`), app.defaultToppings);
+
+                        // Also clear local storage for cart and customer info
+                        localStorage.removeItem(app.CART_STORAGE_KEY);
+                        localStorage.removeItem(app.CUSTOMER_INFO_STORAGE_KEY);
+                        
+                        app.closeAdminModal();
+                        app.showAlert('Cardápio e configurações restaurados! A página será recarregada.', 'Sucesso', false);
+                        // Reload page to ensure all defaults are loaded and applied correctly
+                        setTimeout(() => window.location.reload(), 2500); 
+                    } catch (error) {
+                        console.error("Erro ao restaurar padrões no Firebase:", error);
+                        app.showAlert(`Erro ao restaurar: ${error.message}`, "Erro de Restauração", true);
                     }
                 }
             );
         },
-        
-        addAdminItem(type, categoryKey) {
-            if (type === 'product') {
-                const newItemData = { id: `prod_${Date.now()}`, name: 'Novo Produto', price: 0.00, disabled: false };
-                const newItemHTML = UI.getAdminItemHTML('product', newItemData);
-                document.getElementById('admin-products-list').insertAdjacentHTML('beforeend', newItemHTML);
-            } else { // Topping
-                const newItemData = { name: 'Novo Complemento', disabled: false };
-                const newItemHTML = UI.getAdminItemHTML('topping', newItemData);
-                document.getElementById(`admin-toppings-${categoryKey}`).insertAdjacentHTML('beforeend', newItemHTML);
+
+        // --- FIREBASE DATA LOADING AND REAL-TIME LISTENERS ---
+        async loadFirebaseData() {
+            if (!app.db) {
+                console.error("Firestore instance is not available.");
+                return;
             }
+
+            // Listen for admin settings changes in real-time
+            onSnapshot(doc(app.db, `artifacts/${appId}/public/data/adminSettings`), (docSnap) => {
+                if (docSnap.exists()) {
+                    app.adminSettings = docSnap.data();
+                    console.log("Admin settings loaded/updated from Firestore:", app.adminSettings);
+                } else {
+                    console.log("No admin settings found in Firestore, using defaults.");
+                    app.adminSettings = app.defaultAdminSettings;
+                    // Optionally, save defaults to Firestore if they don't exist
+                    setDoc(doc(app.db, `artifacts/${appId}/public/data/adminSettings`), app.defaultAdminSettings, { merge: true }).catch(e => console.error("Error setting default admin settings:", e));
+                }
+                // Update UI elements dependent on admin settings
+                app.elements.storeAddressDisplay.textContent = app.adminSettings.address;
+                app.elements.whatsappLink.href = `https://wa.me/${app.adminSettings.whatsappNumber}`;
+                app.checkStoreStatus(); // Re-check status based on new settings
+            }, (error) => {
+                console.error("Error listening to admin settings:", error);
+                app.showAlert("Erro ao carregar configurações da loja.", "Erro de Sincronização", true);
+            });
+
+            // Listen for products changes in real-time
+            onSnapshot(doc(app.db, `artifacts/${appId}/public/data/products`), (docSnap) => {
+                if (docSnap.exists() && docSnap.data().items) {
+                    app.products = docSnap.data().items;
+                    console.log("Products loaded/updated from Firestore:", app.products);
+                } else {
+                    console.log("No products found in Firestore, using defaults.");
+                    app.products = app.defaultProducts;
+                    setDoc(doc(app.db, `artifacts/${appId}/public/data/products`), { items: app.defaultProducts }, { merge: true }).catch(e => console.error("Error setting default products:", e));
+                }
+                app.renderProducts(); // Re-render products with new data
+            }, (error) => {
+                console.error("Error listening to products:", error);
+                app.showAlert("Erro ao carregar produtos.", "Erro de Sincronização", true);
+            });
+
+            // Listen for toppings changes in real-time
+            onSnapshot(doc(app.db, `artifacts/${appId}/public/data/toppings`), (docSnap) => {
+                if (docSnap.exists()) {
+                    app.toppings = docSnap.data();
+                    console.log("Toppings loaded/updated from Firestore:", app.toppings);
+                } else {
+                    console.log("No toppings found in Firestore, using defaults.");
+                    app.toppings = app.defaultToppings;
+                    setDoc(doc(app.db, `artifacts/${appId}/public/data/toppings`), app.defaultToppings, { merge: true }).catch(e => console.error("Error setting default toppings:", e));
+                }
+                // No direct render for toppings, they are used by openItemModal
+            }, (error) => {
+                console.error("Error listening to toppings:", error);
+                app.showAlert("Erro ao carregar complementos.", "Erro de Sincronização", true);
+            });
         },
 
-        renderDeliveryOptions() {
-            const { deliveryMode } = this.state.adminSettings;
-            const { deliveryOptionDelivery, deliveryOptionTakeout } = UI.elements;
-            const deliveryOptionsContainer = document.getElementById('delivery-options');
-            
-            if (!deliveryOptionDelivery || !deliveryOptionTakeout || !deliveryOptionsContainer) return;
+        // --- INITIALIZATION ---
+        /** Initializes the application by loading data, rendering UI, and setting up event listeners. */
+        async initializeApp() {
+            try {
+                // Initialize Firebase
+                app.firebaseApp = initializeApp(firebaseConfig);
+                app.db = getFirestore(app.firebaseApp);
+                app.auth = getAuth(app.firebaseApp);
 
-            const showDelivery = deliveryMode === 'both' || deliveryMode === 'delivery';
-            const showTakeout = deliveryMode === 'both' || deliveryMode === 'takeout';
+                // Authenticate user
+                if (initialAuthToken) {
+                    await signInWithCustomToken(app.auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(app.auth);
+                }
 
-            deliveryOptionDelivery.classList.toggle('hidden', !showDelivery);
-            deliveryOptionTakeout.classList.toggle('hidden', !showTakeout);
-            deliveryOptionsContainer.classList.toggle('hidden', !showDelivery && !showTakeout);
+                // Set up auth state listener to get userId
+                onAuthStateChanged(app.auth, (user) => {
+                    if (user) {
+                        app.userId = user.uid;
+                        console.log("Firebase User ID:", app.userId);
+                        // Once authenticated, load data from Firestore
+                        app.loadFirebaseData();
+                    } else {
+                        app.userId = null;
+                        console.log("No Firebase user is signed in.");
+                        // Handle case where user is not authenticated (e.g., show a message or disable features)
+                        app.showAlert("Não foi possível autenticar no Firebase. Algumas funcionalidades podem estar limitadas.", "Erro de Autenticação", true);
+                    }
+                });
 
-            const currentSelected = document.querySelector('input[name="delivery_option"]:checked');
-            if (!currentSelected || currentSelected.closest('label').classList.contains('hidden')) {
-                if (showDelivery) deliveryOptionDelivery.querySelector('input').checked = true;
-                else if (showTakeout) deliveryOptionTakeout.querySelector('input').checked = true;
+                // Load cart and customer info from local storage (these remain local)
+                app.loadCart(); 
+                app.loadCustomerInfo();
+                
+                // Initial renders (will be updated by Firestore listeners once data arrives)
+                app.renderProducts();
+                app.renderDeliveryOptions();
+                app.renderCart();
+                app.updateCartIcon();
+                app.checkStoreStatus(); // Initial check (might show loading state)
+
+                // Event listeners
+                app.elements.addToCartBtn.addEventListener('click', app.addToCart);
+                app.elements.customerNameInput.addEventListener('input', app.saveCustomerInfo);
+                app.elements.customerAddressInput.addEventListener('input', app.saveCustomerInfo);
+                app.elements.neighborhoodSelect.addEventListener('change', () => {
+                    app.saveCustomerInfo();
+                    app.renderCart(); 
+                });
+                app.elements.deliveryOptionRadios.forEach(radio => {
+                    radio.addEventListener('change', () => {
+                        app.toggleDeliveryFields(); 
+                        app.saveCustomerInfo();
+                    });
+                });
+                
+                app.elements.adminPasswordInput.addEventListener('keypress', function(event) {
+                    if (event.key === 'Enter') {
+                        app.checkAdminPassword();
+                    }
+                });
+
+                // Set up a timer to periodically check store status (e.g., every minute)
+                setInterval(app.checkStoreStatus, 60 * 1000); 
+
+            } catch (error) {
+                console.error("Failed to initialize Firebase or app:", error);
+                app.showAlert(`Erro ao iniciar o aplicativo: ${error.message}`, "Erro Crítico", true);
             }
-            this.toggleDeliveryFields();
-        },
-
-        toggleDeliveryFields() {
-            const deliveryOption = document.querySelector('input[name="delivery_option"]:checked')?.value;
-            if (UI.elements.deliveryFields) {
-                UI.elements.deliveryFields.classList.toggle('hidden', deliveryOption === 'takeout' || !deliveryOption);
-            }
-            this.renderCart();
         }
     };
 
-    document.addEventListener('DOMContentLoaded', () => App.init());
+    // Start the app when the DOM is fully loaded
+    document.addEventListener('DOMContentLoaded', () => {
+        app.initializeApp();
+    });
 
     </script>
 </body>
